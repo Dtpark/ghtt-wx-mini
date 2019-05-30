@@ -1,0 +1,54 @@
+{
+  "pages": [   
+    "pages/index/main",
+    "pages/notice/detail/main",
+
+    "pages/curriculum/week/main",
+    "pages/campuscard/detail/main",
+
+    "pages/tools/list/main",
+    "pages/classroom/main",
+
+    "pages/setting/main",
+    "pages/edusys/main",
+    "pages/campuscardsys/main",
+
+    "pages/login/main", 
+    
+    "pages/home/main",
+    "pages/logs/main",
+    "pages/picker/main"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "white",
+    "navigationBarTitleText": "观海听涛",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#999",
+    "backgroundColor": "#fafafa",
+    "selectedColor": "#1296db",
+    "borderStyle": "white",
+
+    "list": [{
+      "text": "首页",
+      "pagePath": "pages/index/main",
+      "iconPath": "static/tabs/home.png",
+      "selectedIconPath": "static/tabs/home_HL.png"
+    }, {
+      "text": "应用",
+      "pagePath": "pages/tools/list/main",
+      "iconPath": "static/tabs/tools.png",
+      "selectedIconPath": "static/tabs/tools_HL.png"
+    }, {
+      "text": "设置",
+      "pagePath": "pages/setting/main",
+      "iconPath": "static/tabs/setting.png",
+      "selectedIconPath": "static/tabs/setting_HL.png"
+    }],
+
+    
+    "position": "bottom"
+  }
+}
