@@ -83,14 +83,16 @@
     <!-- 提示结束 -->
 
     <!-- 返回首页开始 -->
-    <div class="goHome" @click="$index.goHome">
-      <img src="/static/images/home.png">
-    </div>
+    <goHome ></goHome>
     <!-- 返回首页结束 -->
   </div>
 </template>
 <script>
+import goHome from "@/components/goHome";
 export default {
+  components:{
+    goHome
+  },
   data() {
     return {
       // 时间选择列表

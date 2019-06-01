@@ -64,10 +64,15 @@
       <button class="weui-btn edubind" type="default" form-type="reset">重置</button>
     </form>
     <!-- 绑定信息页面结束 -->
+    <goHome ></goHome>
   </div>
 </template>
 <script>
+import goHome from '@/components/goHome';
 export default {
+  components:{
+    goHome
+  },
   data() {
     return {
       isBind: false, // 是否已经绑定教务系统，true为绑定，false为未绑定
@@ -331,7 +336,7 @@ export default {
 </script>
 <style scoped>
 .edubind {
-  margin: 10px 15px;
+  margin: 20rpx 30rpx;
 }
 </style>
 

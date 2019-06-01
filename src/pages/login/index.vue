@@ -24,7 +24,7 @@
 export default {
   data() {
     return {
-        lastPage: '/pages/index/main'
+      lastPage: "/pages/index/main"
     };
   },
   methods: {
@@ -42,8 +42,8 @@ export default {
 
             if (
               that.lastPage == "/pages/index/main" ||
-              that.lastPage == "/pages/app/app" ||
-              that.lastPage == "/pages/setting/setting"
+              that.lastPage == "/pages/tools/list/main" ||
+              that.lastPage == "/pages/setting/main"
             ) {
               // 如果lastPage是tabbar页面则用wx.switchTab(Object object)跳转
               wx.switchTab({
@@ -73,9 +73,11 @@ export default {
     let that = this;
     console.log(options);
     if (options.url) {
-      console.log(that);
-      console.log(that.lastPage);
-      that.lastPage = options.url;
+      // console.log(that);
+      // console.log(that.lastPage);
+      if (options.url != "/pages/login/main") {
+        that.lastPage = options.url;
+      }
     }
   }
 };
@@ -91,7 +93,7 @@ export default {
   line-height: 450rpx;
 }
 
-.header image {
+.header img {
   width: 200rpx;
   height: 200rpx;
 }
@@ -101,7 +103,7 @@ export default {
   margin-bottom: 90rpx;
 }
 
-.content text {
+.content p {
   display: block;
   color: #9d9d9d;
   margin-top: 40rpx;

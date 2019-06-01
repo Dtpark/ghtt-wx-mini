@@ -48,24 +48,8 @@ export default {
   -o-transition: width 2s;
 }
 page{
-  background: #eeeeee;
+  background: rgb(241, 241, 241);
 }
-
-/* 返回首页按钮样式开始 */
-.goHome{
-  /* display: none; */
-  width: 80rpx;
-  overflow: hidden;
-  position: fixed;
-  bottom: 80rpx;
-  right: 40rpx;
-}
-.goHome img{
-  width: 80rpx;
-  height: 80rpx;
-  opacity: 0.6;
-}
-/* 返回首页按钮样式结束 */
 
 /* 隐藏滚动条 */
 ::-webkit-scrollbar {

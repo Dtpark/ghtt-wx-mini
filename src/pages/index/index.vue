@@ -121,7 +121,7 @@
             <div class="applet_campuscard_label">元</div>
           </div>
           <div class="applet_campuscard_ft">
-            <div class="applet_campuscard_ft_title">今日交易：</div>
+            <div class="applet_campuscard_ft_title">今日交易:</div>
             <div v-if="bills && bills['data'].length > 0" class="applet_campuscard_ft_content">
               <swiper vertical="true" autoplay="true" interval="4000">
                 <block v-for="(item, index) in bills['data']" :key="index">
@@ -140,6 +140,16 @@
             </div>
             <div v-else class="applet_campuscard_ft_content">
               <div class="applet_campuscard_expenses_item">加载中……</div>
+              <!-- <swiper vertical="true" autoplay="true" interval="4000">
+                <swiper-item class="applet_campuscard_expenses_item">
+                  <div class="applet_campuscard_expenses_left">[ 消费 ] 12:11 家家悦购物中心111222333</div>
+                  <div class="applet_campuscard_expenses_right">-100</div>
+                </swiper-item>
+                <swiper-item class="applet_campuscard_expenses_item">
+                  <div class="applet_campuscard_expenses_left">[ 消费 ] 12:11 家家悦购物中心</div>
+                  <div class="applet_campuscard_expenses_right">-100</div>
+                </swiper-item>
+              </swiper>-->
             </div>
           </div>
         </div>
@@ -204,7 +214,7 @@ export default {
   },
   methods: {
     /**
-     * 获取轮播图url
+     * 获取轮播图url 和 今日日期
      */
     getBanner(that) {
       // let that = this;
@@ -216,6 +226,12 @@ export default {
           case 404:
             break;
         }
+        // 获取今日日期
+        let date = new Date();
+        let year = date.getFullYear().toString();
+        let month = (date.getMonth() + 1).toString();
+        let day = date.getDate().toString();
+        that.date = year + "/" + month + "/" + day;
       });
     },
     /**
@@ -262,7 +278,7 @@ export default {
       // return false;
       switch (edubind) {
         case "unbind":
-          console.log(that.eduSysBind);
+          // console.log(that.eduSysBind);
           if (that.eduSysBind == true) {
             that.eduSysBind = false;
           }
@@ -311,6 +327,7 @@ export default {
                 that.week = success.data.today.week;
                 that.day2text = success.data.today.day2text;
                 that.todayCurriculum = success.data.todayTable;
+                that.$forceUpdate();
                 break;
               case 10:
                 // 登录过期，重新登录
@@ -382,15 +399,9 @@ export default {
             // console.log(success.data);
             switch (success.data.errcode) {
               case 0:
-                // 获取今日日期
-                let date = new Date();
-                let year = date.getFullYear().toString();
-                let month = (date.getMonth() + 1).toString();
-                let day = date.getDate().toString();
-
-                that.date = year + "/" + month + "/" + day;
                 that.balance = success.data.balance;
                 that.bills = success.data.bills;
+                that.$forceUpdate();
                 break;
               case 10:
                 // 登录过期，重新登录
@@ -418,9 +429,9 @@ export default {
   },
 
   /**
-   * 生命周期函数--监听页面加载
+   * 生命周期函数
    */
-  onLoad(options) {
+  created() {
     let that = this;
     wx.showLoading({
       title: "加载中",
@@ -454,6 +465,44 @@ export default {
     that.getNoticeList(that);
     let date = new Date();
     let hour = date.getHours();
+    let day = date.getDay();
+    // console.log(that.week);
+    // 检查教务系统绑定状态
+    that.isBindEduSys(that);
+    // 检查一卡通绑定状态
+    that.isBindCampuscard(that);
+    if (that.week == "*" || that.balance == "*") {
+      // 没有获取到课表和消费信息
+      // 查看是否绑定教务系统
+      if (wx.getStorageSync("edubind") == "bind" && that.week == "*") {
+        // 绑定了教务系统,获取今日课表
+        that.getTodayTable(that);
+      }
+      // 查看是否绑定一卡通系统
+      if (
+        wx.getStorageSync("campuscardbind") == "bind" &&
+        that.balance == "*" &&
+        hour >= 8 &&
+        hour < 18 &&
+        day != 6 &&
+        day != 7
+      ) {
+        // 绑定了一卡通系统,获取消费信息
+        that.getTodayExpenses(that);
+      }
+    }
+    wx.hideLoading();
+  },
+  /**
+   * 页面相关事件处理函数--监听用户下拉动作
+   */
+  onPullDownRefresh() {
+    let that = this;
+
+    // 获取通知公告列表
+    that.getNoticeList(that);
+    let date = new Date();
+    let hour = date.getHours();
     // console.log(that.week);
     if (that.week == "*" || that.balance == "*") {
       // 没有获取到课表和消费信息
@@ -467,20 +516,15 @@ export default {
         wx.getStorageSync("campuscardbind") == "bind" &&
         that.balance == "*" &&
         hour >= 8 &&
-        hour < 18
+        hour < 18 &&
+        day != 6 &&
+        day != 7
       ) {
         // 绑定了一卡通系统,获取消费信息
         that.getTodayExpenses(that);
       }
     }
-    wx.hideLoading();
-  },
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function () {
-    let that = this;
-    that.onShow();    
+
     wx.stopPullDownRefresh();
   }
 };
@@ -513,9 +557,9 @@ export default {
 .applet_br {
   width: 690rpx;
   margin-left: 30rpx;
-  height: 4px;
+  height: 2px;
   background: rgba(255, 255, 255, 1);
-  border-bottom: #eeeeee solid 1px;
+  border-bottom: darkgray solid 1px;
 }
 /* 分割线样式结束 */
 
@@ -526,7 +570,7 @@ export default {
   height: auto;
 }
 .weui-media-box {
-  padding: 5px 30rpx;
+  padding: 10rpx 30rpx;
 }
 .weui-media-box__hd_in-appmsg {
   width: 60rpx;
@@ -536,7 +580,7 @@ export default {
 
 .weui-media-box__desc {
   margin: 10rpx;
-  font-size: 24rpx;
+  font-size: 28rpx;
   color: black;
 }
 .applet_notice_swiper {
@@ -548,11 +592,11 @@ export default {
 .applet_panel_card {
   background: rgba(255, 255, 255, 1);
   width: 100%;
-  padding-bottom: 10px;
+  padding-bottom: 20rpx;
 }
 .applet_cell_link {
   color: black;
-  font-size: 24rpx;
+  font-size: 28rpx;
 }
 .weui-cell__bd {
   font-size: 32rpx;
@@ -587,17 +631,17 @@ export default {
   font-weight: 500;
 }
 .applet_curriculm_item_time {
-  font-size: 24rpx;
+  font-size: 28rpx;
 }
 .applet_curriculm_item_room {
-  font-size: 24rpx;
+  font-size: 28rpx;
 }
 /* 今日课表样式结束 */
 
 /* 一卡通（今日消费）样式开始 */
 .applet_campuscard_box {
   /* overflow: auto; */
-  padding: 10px 15px;
+  padding: 20rpx 30rpx;
 }
 
 .applet_campuscard_detail {
@@ -615,9 +659,9 @@ export default {
 }
 
 .applet_campuscard_hd {
-  font-size: 24rpx;
+  font-size: 28rpx;
   display: flex;
-  padding: 30rpx 40rpx;
+  padding: 30rpx 30rpx;
 }
 .applet_campuscard_hd_left {
   width: 50%;
@@ -637,7 +681,7 @@ export default {
   width: 100%;
   text-align: center;
   display: inline-block;
-  margin-top: 80rpx;
+  margin-top: 75rpx;
   text-align: center;
 }
 .applet_campuscard_label {
@@ -653,17 +697,17 @@ export default {
 .applet_campuscard_ft {
   width: 100%;
   height: 30rpx;
-  font-size: 24rpx;
+  font-size: 28rpx;
   position: absolute;
-  bottom: 0rpx;
-  padding: 30rpx 40rpx;
+  bottom: 10rpx;
+  padding: 30rpx 30rpx;
   /* display: inline-block; */
 }
 .applet_campuscard_ft_title {
-  width: 20%;
+  width: 22%;
   float: left;
   text-align: left;
-  display: inline;
+  display: inline-block;
 }
 .applet_campuscard_ft_content {
   display: inline-block;
@@ -672,19 +716,24 @@ export default {
   height: 100%;
 }
 .applet_campuscard_expenses_item {
-  width: 100%;
+  width: 95%;
   height: 100%;
   display: inline-block;
+  /* margin-left: -10rpx;
+  z-index: 101; */
 }
 
 .applet_campuscard_expenses_left {
-  width: 70%;
+  width: 85%;
   float: left;
   text-align: left;
   display: inline;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .applet_campuscard_expenses_right {
-  width: 30%;
+  width: 15%;
   float: right;
   text-align: right;
   display: inline;

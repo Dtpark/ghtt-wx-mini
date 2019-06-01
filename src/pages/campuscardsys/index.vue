@@ -68,10 +68,18 @@
       <button class="weui-btn edubind" type="default" form-type="reset">重置</button>
     </form>
     <!-- 绑定信息页面结束 -->
+
+    <!-- 引入返回首页的组件 -->
+    <goHome ></goHome>
+
   </div>
 </template>
 <script>
+import goHome from'@/components/goHome';
 export default {
+  components:{
+    goHome
+  },
   data() {
     return {
       stuid: null,
@@ -338,7 +346,7 @@ export default {
 </script>
 <style scoped>
 .edubind {
-  margin: 10px 15px;
+  margin: 20rpx 30rpx;
 }
 .tips {
   margin: 20rpx 30rpx;
