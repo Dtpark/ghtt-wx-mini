@@ -1,5 +1,6 @@
 {
   "usingComponents": {},
   "navigationBarTitleText": "观海听涛",
-  "enablePullDownRefresh": true
+  "enablePullDownRefresh": true,
+  "navigationStyle": "default"
 }

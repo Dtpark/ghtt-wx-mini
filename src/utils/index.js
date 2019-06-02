@@ -18,5 +18,11 @@ export function formatTime(date) {
   return `${t1} ${t2}`
 }
 
+function getSysInfo() {
+  const res = wx.getSystemInfoSync()
+  return res
+}
+
 export default {
+  getSysInfo
 }

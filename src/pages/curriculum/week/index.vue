@@ -1,5 +1,13 @@
 <template>
   <div class="page">
+    <!-- <frames></frames> -->
+    <!-- <navigationBar
+      :title="videoTitle"
+      :navBackgroundColor="'pink'"
+      :titleColor="'green'"
+      :back-visible="true"
+      :home-path="'/pages/index/main'"
+    ></navigationBar> -->
     <!-- 周次选择开始 -->
     <div class="applet_curriculum_week_select">
       <picker @change="bindWeekChange" :value="week" :range="weeklist">
@@ -24,17 +32,22 @@
       <!-- 顶部星期条结束 -->
 
       <!-- 课表滚动区域开始 -->
-      <scroll-view scroll-y="true" class="scroll">
-        <div style="height:1200rpx;width:730rpx;display:flex;">
+      <scroll-view scroll-y="true" class="scroll" :style="{height:(winHeight*2-60-55)/2+'px'}">
+        <div :style="{height:currHeight*6+'px',width:'730rpx',display:'flex'}">
           <!-- 侧边节次号开始 -->
           <div class="sidebar">
-            <div v-for="(item, index) in [1,2,3,4,5,6]" :key="index" class="left">{{ item }}</div>
+            <div
+              v-for="(item, index) in [1,2,3,4,5,6]"
+              :key="index"
+              class="left"
+              :style="{height:currHeight+'px'}"
+            >{{ item }}</div>
           </div>
           <!-- 侧边节次号结束 -->
           <!-- 按节次分割线开始 -->
           <div v-for="(item, index) in [1,2,3,4,5,6]" :key="index">
             <div
-              :style="{width:'750rpx',height:'1px', top: (index+1)*200+'rpx', position: 'absolute', borderBottom: (index == 1 || index == 3)?('red solid 1px'):('lightgray') +' solid 1px'}"
+              :style="{width:'750rpx',height:'1px', top: (index+1)*currHeight+'px', position: 'absolute', borderBottom: (index == 1 || index == 3)?('red solid 1px'):('lightgray solid 1px')}"
             ></div>
           </div>
           <!-- 按节次分割线结束 -->
@@ -45,7 +58,7 @@
               class="flex-item kcb-item"
               @click="showCarddiv"
               data-statu="open"
-              :style="{marginLeft:(item.day-1)*96+'rpx', marginTop: (item.time-1)*200+5 +'rpx', height:'195rpx',backgroundColor:kch2color[item.kch]}"
+              :style="{marginLeft:(item.day-1)*96+'rpx', marginTop: (item.time-1)*currHeight+5 +'px', height:currHeight-5+'px',backgroundColor:kch2color[item.kch]}"
             >
               <div class="smalltext">{{ item.name }}@{{ item.room }}</div>
             </div>
@@ -57,7 +70,7 @@
     </div>
     <!-- 课表结束 -->
     <!-- 未安排周次的课程开始 -->
-    <div class="applet_lack_week_class">
+    <!-- <div class="applet_lack_week_class">
       <p>未安排周次的课程</p>
       <div class="table">
         <div class="tr">
@@ -74,7 +87,7 @@
           <div v-else class="td td4">暂未安排</div>
         </div>
       </div>
-    </div>
+    </div>-->
     <!-- 未安排周次的课程结束 -->
     <!-- 返回首页开始 -->
     <goHome></goHome>
@@ -83,12 +96,21 @@
 </template>
 <script>
 import goHome from "@/components/goHome";
+import frames from "@/components/frames";
+// import navigationBar from "@/components/navigationBar";
+
 export default {
-  components:{
-    goHome
+  components: {
+    goHome,
+    frames
   },
   data() {
     return {
+      // 设备高度
+      winHeight: null,
+      // 每大节课的高度
+      currHeight: null,
+
       // 课程列表
       wlist: null,
       // 待选择的周次
@@ -188,19 +210,60 @@ export default {
     }
   },
   /**
+   * 生命周期函数
+   */
+  created() {
+    let that = this;
+    // 获取系统信息
+    wx.getSystemInfo({
+      success: function(res) {
+        // 获取设备屏幕高度（px）
+        that.winHeight = res.windowHeight;
+        // 设置每大节的高度(px)
+        that.currHeight = (res.windowHeight * 2 - 55 - 60) / 4 / 2;
+      }
+    });
+  },
+  /**
    * 生命周期函数--监听页面显示
    */
   onShow() {
     let that = this;
     wx.showLoading({
-      title: '加载中', //提示的内容,
-      mask: true, //显示透明蒙层，防止触摸穿透
+      title: "加载中", //提示的内容,
+      mask: true //显示透明蒙层，防止触摸穿透
     });
     that.$login
       .isLogin()
       .then(res => {
         // console.log(res);
-        that.getWeekTimeTable();
+        // 判断是否绑定教务系统
+        let edubind = wx.getStorageSync("edubind");
+        switch (edubind) {
+          case "bind":
+            that.getWeekTimeTable();
+            break;
+          case "unbind":
+            wx.showModal({
+              title: "提示", //提示的标题,
+              content: "您尚未绑定教务系统是否进行绑定？", //提示的内容,
+              showCancel: true, //是否显示取消按钮,
+              cancelText: "取消", //取消按钮的文字，默认为取消，最多 4 个字符,
+              cancelColor: "#000000", //取消按钮的文字颜色,
+              confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
+              confirmColor: "#3CC51F", //确定按钮的文字颜色,
+              success: res => {
+                if (res.confirm) {
+                  // console.log('用户点击确定')
+                  wx.navigateTo({ url: "/pages/edusys/main" });
+                } else if (res.cancel) {
+                  // console.log('用户点击取消')
+                  wx.switchTab({ url: "/pages/index/main" });
+                }
+              }
+            });
+            break;
+        }
         wx.hideLoading();
       })
       .catch(e => {
@@ -273,7 +336,7 @@ page {
   display: flex;
   flex-direction: row;
   margin-left: 78rpx;
-  /* background-color: #d6f1ff; */
+  background-color: #fff;
   color: rgb(136, 136, 136);
   border-bottom: lightgray solid 1rpx;
   padding-bottom: 20rpx;
@@ -290,9 +353,9 @@ page {
 }
 
 .scroll {
-  /* background-color: rgba(255, 255, 255, 0.6); */
-  height: 400px;
-  z-index: 101;
+  /* background-color: rgba(255, 255, 255, 1); */
+  /* height: 400px; */
+  /* z-index: 101; */
   position: relative;
 }
 
@@ -305,7 +368,7 @@ page {
 
 .left {
   width: 78rpx;
-  height: 200rpx;
+  /* height: 200rpx; */
   font-size: 9pt;
   justify-content: center;
   display: flex;

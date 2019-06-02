@@ -65,15 +65,15 @@
     <!-- 返回首页开始 -->
     <!-- <div class="goHome" @click="$index.goHome">
       <img src="/static/images/home.png">
-    </div> -->
-    <goHome ></goHome>
+    </div>-->
+    <goHome></goHome>
     <!-- 返回首页结束 -->
   </div>
 </template>
 <script>
 import goHome from "@/components/goHome";
 export default {
-  components:{
+  components: {
     goHome
   },
   data() {
@@ -110,52 +110,85 @@ export default {
       }
     }
   },
-  onLoad: function() {
+  onShow() {
     let that = this;
+    wx.showLoading({
+      title: '加载中', //提示的内容,
+      mask: true, //显示透明蒙层，防止触摸穿透
+    });
     that.$login
       .isLogin()
       .then(() => {
-        // 获取系统信息
-        wx.getSystemInfo({
-          success: function(res) {
-            // that.setData({
-            //   winWidth: res.windowWidth,
-            //   winHeight: res.windowHeight
-            // });
-            that.winWidth = res.windowWidth;
-            that.winHeight = res.windowHeight;
-            // console.log(res);
-          }
-        });
-
-        let session3rd = wx.getStorageSync("session3rd");
-        let data = {
-          session3rd: session3rd
-        };
-        that.$wxAPI
-          .request(that.$url.expensesRecordUrl, data, "POST")
-          .then(success => {
-            // console.log(success.data);
-            switch (success.data.errcode) {
-              case 0:
-                //   that.setData({
-                //     user: success.data.data.user.data,
-                //     billsMore: success.data.data.billsMore.data
-                //   });
-                that.user = success.data.data.user.data;
-                that.billsMore = success.data.data.billsMore.data;
-                break;
-              case 10:
-                that.$login.doLogin();
-                break;
-              default:
-                wx.showModal({
-                  title: "提示", //提示的标题,
-                  content: success.data.errmsg, //提示的内容,
-                  showCancel: false //是否显示取消按钮
-                });
-            }
-          });
+        // 判断用户是否绑定一卡通系统
+        let campuscardbind = wx.getStorageSync("campuscardbind");
+        switch (campuscardbind) {
+          case "bind":
+            // 获取系统信息
+            wx.getSystemInfo({
+              success: function(res) {
+                // that.setData({
+                //   winWidth: res.windowWidth,
+                //   winHeight: res.windowHeight
+                // });
+                that.winWidth = res.windowWidth;
+                that.winHeight = res.windowHeight;
+                // console.log(res);
+              }
+            });
+            let session3rd = wx.getStorageSync("session3rd");
+            let data = {
+              session3rd: session3rd
+            };
+            that.$wxAPI
+              .request(that.$url.expensesRecordUrl, data, "POST")
+              .then(success => {
+                // console.log(success.data);
+                switch (success.data.errcode) {
+                  case 0:
+                    //   that.setData({
+                    //     user: success.data.data.user.data,
+                    //     billsMore: success.data.data.billsMore.data
+                    //   });
+                    that.user = success.data.data.user.data;
+                    that.billsMore = success.data.data.billsMore.data;
+                    wx.hideLoading();
+                    break;
+                  case 10:
+                    that.$login.doLogin();
+                    wx.hideLoading();
+                    break;
+                  default:
+                    wx.hideLoading();
+                    wx.showModal({
+                      title: "提示", //提示的标题,
+                      content: success.data.errmsg, //提示的内容,
+                      showCancel: false //是否显示取消按钮
+                    });
+                }
+              });
+            break;
+          case "unbind":
+            wx.hideLoading();
+            wx.showModal({
+              title: "提示", //提示的标题,
+              content: "您尚未绑定一卡通系统是否进行绑定？", //提示的内容,
+              showCancel: true, //是否显示取消按钮,
+              cancelText: "取消", //取消按钮的文字，默认为取消，最多 4 个字符,
+              cancelColor: "#000000", //取消按钮的文字颜色,
+              confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
+              confirmColor: "#3CC51F", //确定按钮的文字颜色,
+              success: res => {
+                if (res.confirm) {
+                  // console.log('用户点击确定')
+                  wx.navigateTo({ url: "/pages/campuscardsys/main" });
+                } else if (res.cancel) {
+                  // console.log('用户点击取消')
+                  wx.switchTab({ url: "/pages/index/main" });
+                }
+              }
+            });
+            break;
+        }
       })
       .catch(e => {
         console.log(e);
@@ -164,83 +197,83 @@ export default {
 };
 </script>
 <style scoped>
-.swiper-tab{  
-    width: 100%;
-    border-bottom: 1px solid #777777;  
-    text-align: center;  
-    line-height: 40px;
-    position: fixed;
-    z-index: 1;
-}  
-.swiper-tab-list{  
-    font-size: 14px;  
-    display: inline-block;  
-    width: 50%;  
-    color: #777777;  
-}  
-.on{ 
-    color: #53AFFD;  
-    border-bottom: 2.5px solid #53AFFD;
+.swiper-tab {
+  width: 100%;
+  border-bottom: 1px solid #777777;
+  text-align: center;
+  line-height: 40px;
+  position: fixed;
+  z-index: 1;
 }
-.swiper-box{ 
-    display: block;
-    height: 100%; 
-    width: 100%; 
-    overflow: hidden; 
-}  
-.swiper-box view{  
-    text-align: center;  
-}  
+.swiper-tab-list {
+  font-size: 14px;
+  display: inline-block;
+  width: 50%;
+  color: #777777;
+}
+.on {
+  color: #53affd;
+  border-bottom: 2.5px solid #53affd;
+}
+.swiper-box {
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.swiper-box view {
+  text-align: center;
+}
 
-
-.history-table-wrap{
-    position: relative;
-    width: 90%;
-    height: 960rpx;
-    /* left: 5%; */
-    background: rgba(255, 255, 255, 1);
-    /* margin-left: -334rpx; */
-    /* top: 70rpx; */
-    overflow-y: scroll;
-    overflow-x: hidden;
-    text-align: center;
-    margin-top: 60px;
-    margin-left: 5%;
-    border-radius: 10rpx;
-  }
-  /* 表格代码   */
-  .table{
-    /* border:1px solid #dadada; */
-    /* border-right:0;
+.history-table-wrap {
+  position: relative;
+  width: 90%;
+  height: 960rpx;
+  /* left: 5%; */
+  background: rgba(255, 255, 255, 1);
+  /* margin-left: -334rpx; */
+  /* top: 70rpx; */
+  overflow-y: scroll;
+  overflow-x: hidden;
+  text-align: center;
+  margin-top: 60px;
+  margin-left: 5%;
+  border-radius: 10rpx;
+}
+/* 表格代码   */
+.table {
+  /* border:1px solid #dadada; */
+  /* border-right:0;
     border-bottom: 0; */
-    border-top: 1px solid #dadada;
-    border-left: 1px solid #dadada;
-    width: 95%;
-    margin: 20rpx 2.5%;
-  }
-  .tr{
-    width:100%;
-    display: flex;
-    justify-content: space-between;
-  }
-  .th,.td{
-    padding: 20rpx;
-    border-bottom: 1px solid #dadada;
-    border-right: 1px solid #dadada;
-    text-align: center;
-    width: 100%;
-  }
+  border-top: 1px solid #dadada;
+  border-left: 1px solid #dadada;
+  width: 95%;
+  margin: 20rpx 2.5%;
+}
+.tr {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.th,
+.td {
+  padding: 20rpx;
+  border-bottom: 1px solid #dadada;
+  border-right: 1px solid #dadada;
+  text-align: center;
+  width: 100%;
+}
 
-  .th{
-    /* font-weight: 800; */
-    /* background-color: #d6f1ff; */
-    font-size: 16px;
-    /* color: #1296db; */
-  }
-  .td{
-    font-size: 14px;
-    color: gray;
-  }
+.th {
+  /* font-weight: 800; */
+  /* background-color: #d6f1ff; */
+  font-size: 16px;
+  /* color: #1296db; */
+}
+.td {
+  font-size: 14px;
+  color: gray;
+}
 </style>
 
 

@@ -485,7 +485,7 @@ export default {
         hour >= 8 &&
         hour < 18 &&
         day != 6 &&
-        day != 7
+        day != 0
       ) {
         // 绑定了一卡通系统,获取消费信息
         that.getTodayExpenses(that);
@@ -503,6 +503,7 @@ export default {
     that.getNoticeList(that);
     let date = new Date();
     let hour = date.getHours();
+    let day = date.getDay();
     // console.log(that.week);
     if (that.week == "*" || that.balance == "*") {
       // 没有获取到课表和消费信息
@@ -518,13 +519,12 @@ export default {
         hour >= 8 &&
         hour < 18 &&
         day != 6 &&
-        day != 7
+        day != 0
       ) {
         // 绑定了一卡通系统,获取消费信息
         that.getTodayExpenses(that);
       }
     }
-
     wx.stopPullDownRefresh();
   }
 };

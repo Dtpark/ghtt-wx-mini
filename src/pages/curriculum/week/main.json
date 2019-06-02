@@ -1,4 +1,6 @@
 {
-    "usingComponents": {},
-    "navigationBarTitleText": "我的课表"
-  }
+  "usingComponents": {},
+  "navigationBarTitleText": "我的课表",
+  "enablePullDownRefresh": true,
+  "navigationStyle": "default"
+}

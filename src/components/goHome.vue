@@ -1,4 +1,4 @@
-<template>
+<template functional>
     <div class="goHome">
         <img src="/static/images/home.png" @click="goHome">
     </div>
