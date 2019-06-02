@@ -269,6 +269,13 @@ export default {
       .catch(e => {
         console.log(e);
       });
+  },
+
+  /**
+   * 用户点击右上角分享
+   */
+  onShareAppMessage: function () {
+
   }
 };
 </script>

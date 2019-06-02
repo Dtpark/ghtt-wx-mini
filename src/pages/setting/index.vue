@@ -47,16 +47,17 @@ export default {
    */
   onLoad(options) {
     wx.showLoading({
-      title: '加载中',
+      title: "加载中",
       mask: true
     });
     let that = this;
     // 判断是否登录
-    that.$login.isLogin()
+    that.$login
+      .isLogin()
       .then(() => {
         // 已经登录
-        let userInfoRes = JSON.parse(wx.getStorageSync('userInfoRes'));
-         
+        let userInfoRes = JSON.parse(wx.getStorageSync("userInfoRes"));
+
         that.avatarUrl = userInfoRes.userInfo.avatarUrl;
         that.nickName = userInfoRes.userInfo.nickName;
       })
@@ -65,16 +66,19 @@ export default {
       })
       .catch(e => {
         console.log(e);
-      })
+      });
+  },
 
-
-  }
+  /**
+   * 用户点击右上角分享
+   */
+  onShareAppMessage: function() {}
 };
 </script>
 
 <style scoped>
-page{
-    background: #eeeeee;
+page {
+  background: #eeeeee;
 }
 </style>
 

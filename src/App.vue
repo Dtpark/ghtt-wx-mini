@@ -26,7 +26,10 @@ export default {
   // },
   // log () {
   //   console.log(`log at:${Date.now()}`)
-  wx.showShareMenu();
+  // wx.showShareMenu();
+  },
+  onLaunch() {
+    wx.showShareMenu({ withShareTicket: true });
   }
 }
 </script>
