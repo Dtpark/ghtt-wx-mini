@@ -1,5 +1,5 @@
 {
-  "pages": [   
+  "pages": [
     "pages/index/main",
     "pages/notice/detail/main",
 
@@ -8,6 +8,8 @@
 
     "pages/tools/list/main",
     "pages/classroom/main",
+
+    "pages/forum/detail/main",   
 
     "pages/setting/main",
     "pages/edusys/main",

@@ -1,7 +1,7 @@
 // 用于封装待请求的API接口
 
-const baseUrl = 'https://mini.dtpark.top/index.php/';
-// const baseUrl = 'http://mini.ghtt.com/index.php/';
+// const baseUrl = 'https://mini.dtpark.top/index.php/';
+const baseUrl = 'http://mini.ghtt.com/index.php/';
 
 const loginUrl = baseUrl + 'login';
 
@@ -36,6 +36,8 @@ const getBannerUrl = baseUrl + 'showBanner';
 const getNoticeListUrl = baseUrl + 'notice/list';
 const getNoticeDetailUrl = baseUrl + 'notice/detail';
 
+const forumDetailUrl = baseUrl + 'forum/detail';
+
 
 export default {
   
@@ -55,5 +57,6 @@ export default {
   toolsListUrl,
   getBannerUrl,
   getNoticeListUrl,
-  getNoticeDetailUrl
+  getNoticeDetailUrl,
+  forumDetailUrl
 }

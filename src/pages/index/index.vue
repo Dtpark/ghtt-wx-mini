@@ -29,7 +29,7 @@
           <div class="weui-media-box__hd weui-media-box__hd_in-appmsg">
             <img class="weui-media-box__thumb" src="/static/images/notice.png">
           </div>
-          <div v-if="noticeList" class="weui-media-box__bd weui-media-box__bd_in-appmsg">
+          <div v-if="noticeList != ''" class="weui-media-box__bd weui-media-box__bd_in-appmsg">
             <swiper
               class="applet_notice_swiper"
               vertical="true"
@@ -262,6 +262,11 @@ export default {
           // 跳转到公告详情
           wx.navigateTo({
             url: "/pages/notice/detail/main?id=" + notice.id
+          });
+          break;
+        case "十大":
+          wx.navigateTo({
+            url: "/pages/forum/detail/main?tid=" + notice.id
           });
           break;
       }
@@ -531,14 +536,12 @@ export default {
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
-
-  }
+  onShareAppMessage: function() {}
 };
 </script>
 
-<style scoped>
-.page {
+<style lang="wxss">
+page {
   overflow: hidden;
   background: white;
 }
