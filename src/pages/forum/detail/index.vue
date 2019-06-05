@@ -187,7 +187,7 @@ export default {
       // 回复列表
       articleList: {},
       // 主题tid
-      tid: 2047638,
+      tid: 205994,
       // 第几页
       page_index: 0,
       // 每次请求主题+回复条数
@@ -369,12 +369,16 @@ export default {
   }
 };
 </script>
-<style lang="wxss">
+<style>
 @import url("~mpvue-wxparse/src/wxParse.css");
 /* p{
   overflow-x: hidden;
   max-width: 100%;
 } */
+.page {
+  width: 100%;
+  overflow: hidden;
+}
 .container {
   display: flex;
   flex-direction: column;
@@ -717,6 +721,28 @@ export default {
 
 video {
   width: 100%;
+}
+
+/* 解决内联元素过长撑开页面的问题：超过650rpx自动换行 */
+.wxParse .inline {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  max-width: 650rpx ;
+  float: left;
+  overflow: hidden ;
+  text-overflow: ellipsis;
+  white-space: normal ;
+  word-wrap: break-word;
+}
+.wxParse .p{
+  display: inline-block;
+  max-width: 650rpx ;
+  float: left;
+  overflow: hidden ;
+  text-overflow: ellipsis;
+  white-space: normal ;
+  word-wrap: break-word;
 }
 </style>
 

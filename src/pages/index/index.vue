@@ -250,7 +250,7 @@ export default {
             // that.$set(that.number , 1);
             that.number = 1;
           }
-          that.$forceUpdate() 
+          that.$forceUpdate();
         });
     },
     /**
@@ -457,6 +457,31 @@ export default {
         that.isBindEduSys(that);
         // 检查一卡通绑定状态
         that.isBindCampuscard(that);
+
+        let date = new Date();
+        let hour = date.getHours();
+        let day = date.getDay();
+        if (that.week == "*" || that.balance == "*") {
+          // 没有获取到课表和消费信息
+          // 查看是否绑定教务系统
+          if (wx.getStorageSync("edubind") == "bind" && that.week == "*") {
+            // 绑定了教务系统,获取今日课表
+            that.getTodayTable(that);
+          }
+          // 查看是否绑定一卡通系统
+          if (
+            wx.getStorageSync("campuscardbind") == "bind" &&
+            that.balance == "*" &&
+            hour >= 8 &&
+            hour < 18 &&
+            day != 6 &&
+            day != 0
+          ) {
+            // 绑定了一卡通系统,获取消费信息
+            that.getTodayExpenses(that);
+          }
+        }
+
         wx.hideLoading();
       })
       .catch(e => {
@@ -471,34 +496,13 @@ export default {
     });
     // 获取通知公告列表
     // that.getNoticeList(that);
-    let date = new Date();
-    let hour = date.getHours();
-    let day = date.getDay();
+
     // console.log(that.week);
     // 检查教务系统绑定状态
     that.isBindEduSys(that);
     // 检查一卡通绑定状态
     that.isBindCampuscard(that);
-    if (that.week == "*" || that.balance == "*") {
-      // 没有获取到课表和消费信息
-      // 查看是否绑定教务系统
-      if (wx.getStorageSync("edubind") == "bind" && that.week == "*") {
-        // 绑定了教务系统,获取今日课表
-        that.getTodayTable(that);
-      }
-      // 查看是否绑定一卡通系统
-      if (
-        wx.getStorageSync("campuscardbind") == "bind" &&
-        that.balance == "*" &&
-        hour >= 8 &&
-        hour < 18 &&
-        day != 6 &&
-        day != 0
-      ) {
-        // 绑定了一卡通系统,获取消费信息
-        that.getTodayExpenses(that);
-      }
-    }
+
     wx.hideLoading();
   },
   /**
@@ -602,7 +606,7 @@ page {
   width: 550rpx;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space:nowrap;
+  white-space: nowrap;
 }
 .applet_notice_swiper {
   height: 85rpx;
