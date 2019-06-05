@@ -247,8 +247,10 @@ export default {
             that.number = 2;
           } else {
             that.noticeList = success.data.noticeList;
+            // that.$set(that.number , 1);
             that.number = 1;
           }
+          that.$forceUpdate() 
         });
     },
     /**
@@ -436,7 +438,7 @@ export default {
   /**
    * 生命周期函数
    */
-  created() {
+  mounted() {
     let that = this;
     wx.showLoading({
       title: "加载中",
@@ -450,6 +452,7 @@ export default {
         // 获取轮播图
         that.getBanner(that);
         // 获取通知公告[放在onshow（）]
+        that.getNoticeList(that);
         // 检查教务系统绑定状态
         that.isBindEduSys(that);
         // 检查一卡通绑定状态
@@ -467,7 +470,7 @@ export default {
       mask: true //显示透明蒙层，防止触摸穿透
     });
     // 获取通知公告列表
-    that.getNoticeList(that);
+    // that.getNoticeList(that);
     let date = new Date();
     let hour = date.getHours();
     let day = date.getDay();
@@ -542,8 +545,12 @@ export default {
 
 <style lang="wxss">
 page {
-  overflow: hidden;
+  /* overflow: hidden; */
   background: white;
+}
+.page {
+  width: 100%;
+  overflow: hidden;
 }
 
 /* banner样式开始 */
@@ -592,6 +599,10 @@ page {
   margin: 10rpx;
   font-size: 28rpx;
   color: black;
+  width: 550rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space:nowrap;
 }
 .applet_notice_swiper {
   height: 85rpx;

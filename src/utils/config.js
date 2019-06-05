@@ -1,7 +1,7 @@
 // 用于封装待请求的API接口
 
-// const baseUrl = 'https://mini.dtpark.top/index.php/';
-const baseUrl = 'http://mini.ghtt.com/index.php/';
+const baseUrl = 'https://mini.dtpark.top/index.php/';
+// const baseUrl = 'http://mini.ghtt.com/index.php/';
 
 const loginUrl = baseUrl + 'login';
 

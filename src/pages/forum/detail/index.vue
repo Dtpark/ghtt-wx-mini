@@ -22,10 +22,10 @@
             <div class="thread_data-sub">
               <div class="thread_data-info">
                 <!-- 浏览量 -->
-                <img class="detail-icon" src="/static/images/views.png"/>
+                <img class="detail-icon" src="/static/images/views.png">
                 <div>{{thread_data.views}}</div>
                 <!-- 回复数 -->
-                <img class="detail-icon" src="/static/images/reply.png"/>
+                <img class="detail-icon" src="/static/images/reply.png">
                 <div>{{thread_data.replies}}</div>
               </div>
               <!-- 版块名称 -->
@@ -76,14 +76,7 @@
             <div>
               <block v-for="(image, imageId) in thread_data.image_list" :key="imageId">
                 <div>
-                  <img
-                    class="thread_image"
-                    mode="widthFix"
-                    :src="image"
-                    :data-src="image"
-                    :data-image_list="thread_data.image_list"
-                    @click="predivImage"
-                  >
+                  <img class="thread_image" mode="widthFix" :src="image" @click="predivImage">
                 </div>
               </block>
             </div>
@@ -147,8 +140,6 @@
                         class="thread_image"
                         mode="widthFix"
                         :src="postItem.post_image_list[idx]"
-                        :data-src="postItem.post_image_list[idx]"
-                        :data-image_list="postItem.post_image_list"
                         @click="predivImage"
                       >
                     </div>
@@ -167,10 +158,9 @@
       </div>
       <!-- 返回顶部按钮开始 -->
       <block v-if="scroll_show">
-        <div
-          class="scroll-to-top"
-          @click="scrollToTop"
-        ><imgclass="scroll-to-top-img" src="../../resources/image/top.png"/></div>
+        <div class="scroll-to-top" @click="scrollToTop">
+          <img class="scroll-to-top-img" src="/static/images/top.png">
+        </div>
       </block>
       <!-- 返回顶部按钮结束 -->
     </div>
@@ -204,6 +194,8 @@ export default {
       page_size: 5,
       // 是否是新读者（增加浏览量）
       new_reader: 0,
+      // 是否显示返回顶部按钮
+      scroll_show: false,
       // 是否没有新数据
       isBottom: false
     };
@@ -225,7 +217,7 @@ export default {
      */
     reloadIndex() {
       let that = this;
-      console.log(that);
+      // console.log(that);
       let data = {
         tid: that.tid,
         new_reader: that.new_reader,
@@ -249,17 +241,40 @@ export default {
     /**
      * 返回首页
      */
-    toIndex(){
-      wx.switchTab({ url: '/pages/index/main' });
+    toIndex() {
+      wx.switchTab({ url: "/pages/index/main" });
+    },
+    /**
+     * 返回顶部
+     */
+    scrollToTop() {
+      let that = this;
+      if (wx.pageScrollTo) {
+        wx.pageScrollTo({
+          scrollTop: 0,
+          duration: 600
+        });
+      } else {
+        wx.showModal({
+          title: "提示",
+          content:
+            "当前微信版本过低，无法使用该功能，请升级到最新微信版本后重试。"
+        });
+      }
+      that.scroll_show = false;
     }
   },
   /**
    * 生命周期函数--监听页面加载
    */
-  mounted() {
+  async mounted() {
     let that = this;
     let options = that.$root.$mp.query;
-    console.log(options);
+    wx.showLoading({
+      title: "加载中", //提示的内容,
+      mask: true //显示透明蒙层，防止触摸穿透
+    });
+    // console.log(options);
     if (options.tid) {
       // 有参数
       let tid = options.tid;
@@ -267,8 +282,10 @@ export default {
       that.new_reader = 1;
 
       // 获取帖子内容
-      that.reloadIndex();
+      await that.reloadIndex();
+      wx.hideLoading();
     } else {
+      wx.hideLoading();
       // 没有帖子id参数, 返回首页
       wx.showModal({
         title: "提示", //提示的标题,
@@ -283,6 +300,19 @@ export default {
           }
         }
       });
+    }
+  },
+  /**
+   * 监听页面滚动
+   * 判断是否显示返回顶部按钮
+   */
+  onPageScroll(e) {
+    let that = this;
+    // console.log(e);
+    if (e.scrollTop >= 600) {
+      that.scroll_show = true;
+    } else {
+      that.scroll_show = false;
     }
   },
   /**
@@ -665,7 +695,7 @@ export default {
 }
 
 .scroll-to-top-img {
-  background-color: #ff6a6a;
+  background-color: #fff;
   width: 90rpx;
   height: 90rpx;
   border-radius: 50%;
