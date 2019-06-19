@@ -327,7 +327,7 @@ export default {
 
 /*提示样式 */
 .tips {
-  width: 86%;
+  width: 90%;
   margin-left: 5%;
   margin-top: 20rpx;
   margin-bottom: 20rpx;

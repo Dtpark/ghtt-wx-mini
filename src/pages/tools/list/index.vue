@@ -1,10 +1,15 @@
 <template>
   <div class="page">
     <div class="page__bd">
+      <div class="cu-bar bg-white solid-bottom">
+        <div class="action">
+          <text class="cuIcon-title text-blue"></text>爱学习
+        </div>
+      </div>
       <div class="weui-grids">
         <block v-for="(item, index) in toolsList" :key="index">
           <navigator :url="item.url" class="weui-grid" hover-class="weui-grid_active">
-            <img class="weui-grid__icon" :src="item.logo" />
+            <img class="weui-grid__icon" :src="item.logo">
             <div class="weui-grid__label">{{ item.title }}</div>
           </navigator>
         </block>
@@ -26,42 +31,46 @@ export default {
   onLoad(options) {
     let that = this;
     wx.showLoading({
-      title: '加载中', //提示的内容,
-      mask: true, //显示透明蒙层，防止触摸穿透
+      title: "加载中", //提示的内容,
+      mask: true //显示透明蒙层，防止触摸穿透
     });
-    that.$wxAPI.request(that.$url.toolsListUrl)
-    .then(success => {
-      //   that.setData({
-      //     'toolsList': success.data
-      //   });
-      that.toolsList = success.data;
-      wx.hideLoading();
-    })
-    .catch(e => {
-        console.log(e)
-    })
+    that.$wxAPI
+      .request(that.$url.toolsListUrl)
+      .then(success => {
+        //   that.setData({
+        //     'toolsList': success.data
+        //   });
+        that.toolsList = success.data;
+        wx.hideLoading();
+      })
+      .catch(e => {
+        console.log(e);
+      });
   },
 
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
-
-  }
+  onShareAppMessage: function() {}
   /**
    * 页面相关事件处理函数--监听用户下拉动作
    */
-//   onPullDownRefresh: function () {
-//     let that = this;
-//     that.onShow();    
-//     wx.stopPullDownRefresh();
-//   }
+  //   onPullDownRefresh: function () {
+  //     let that = this;
+  //     that.onShow();
+  //     wx.stopPullDownRefresh();
+  //   }
 };
 </script>
-<style scoped>
+<style lang='wxss'>
+page {
+  background: white;
+}
 .weui-grid {
   padding: 20px 10px;
   width: 25%;
+  border-right: 0rpx solid #d9d9d9;
+  border-bottom: 0rpx solid #d9d9d9;
 }
 </style>
 

@@ -76,7 +76,14 @@
             <div>
               <block v-for="(image, imageId) in thread_data.image_list" :key="imageId">
                 <div>
-                  <img class="thread_image" mode="widthFix" :src="image" @click="predivImage">
+                  <img
+                    class="thread_image"
+                    mode="widthFix"
+                    :src="image"
+                    :data-src="image"
+                    :data-image_list="thread_data.image_list"
+                    @click="previewImage"
+                  >
                 </div>
               </block>
             </div>
@@ -139,8 +146,10 @@
                       <img
                         class="thread_image"
                         mode="widthFix"
-                        :src="postItem.post_image_list[idx]"
-                        @click="predivImage"
+                        :src="itemlist"
+                        :data-src="itemlist"
+                        :data-image_list="postItem.post_image_list"
+                        @click="previewImage"
                       >
                     </div>
                   </block>
@@ -151,10 +160,14 @@
             <div class="page-tail-space"></div>
           </div>
           <!-- 回复列表结束 -->
+          <!-- 帖子页面结束 -->
+          <div class="weui-footer" :v-show="isBottom">
+            <div class="weui-footer__text">-没有更多了-</div>
+          </div>
         </div>
       </div>
       <div class="page-tail">
-        <navigator class="need-login" url>下载观海app即可参与互动</navigator>
+        <div class="need-login" @click="previewImage" :data-image_list="app_img">点此扫码下载观海app即可参与互动</div>
       </div>
       <!-- 返回顶部按钮开始 -->
       <block v-if="scroll_show">
@@ -163,10 +176,6 @@
         </div>
       </block>
       <!-- 返回顶部按钮结束 -->
-    </div>
-    <!-- 帖子页面结束 -->
-    <div class="weui-footer" :v-show="isBottom">
-      <div class="weui-footer__text">-没有更多了-</div>
     </div>
   </div>
 </template>
@@ -187,7 +196,7 @@ export default {
       // 回复列表
       articleList: {},
       // 主题tid
-      tid: 205994,
+      tid: 2065329,
       // 第几页
       page_index: 0,
       // 每次请求主题+回复条数
@@ -197,7 +206,11 @@ export default {
       // 是否显示返回顶部按钮
       scroll_show: false,
       // 是否没有新数据
-      isBottom: false
+      isBottom: false,
+      // app二维码链接
+      app_img: [
+        "http://ghttdata.hitwh.cc/data/attachment/forum/201708/12/165900u2b22428fqj4pcbb.png"
+      ]
     };
   },
   methods: {
@@ -221,7 +234,7 @@ export default {
       let data = {
         tid: that.tid,
         new_reader: that.new_reader,
-        page_size: that.page_index,
+        page_size: that.page_size,
         page_index: that.page_index
       };
       that.$wxAPI
@@ -279,6 +292,7 @@ export default {
       // 有参数
       let tid = options.tid;
       that.tid = tid;
+      that.page_index = 0;
       that.new_reader = 1;
 
       // 获取帖子内容
@@ -296,11 +310,22 @@ export default {
         success: res => {
           if (res.confirm) {
             // console.log('用户点击确定')
-            // wx.switchTab({ url: "/pages/index/main" });
+            wx.switchTab({ url: "/pages/index/main" });
           }
         }
       });
     }
+  },
+  /**
+   * 生命周期函数
+   */
+  onHide() {
+    // let that = this;
+    // that.thread_data = {
+    //   un_image_attach: 0,
+    //   price: 0
+    // };
+    // that.articleList = {};
   },
   /**
    * 监听页面滚动
@@ -495,6 +520,15 @@ export default {
 .new-post .article-info .article-author-position {
   color: #ff6a6a;
 } */
+.page-body {
+  width: 100%;
+  flex-grow: 1;
+  overflow-x: hidden;
+}
+
+.page__bd {
+  margin-top: 20rpx;
+}
 
 .article-info {
   padding: 10rpx 0 15rpx 0;
@@ -699,7 +733,7 @@ export default {
 }
 
 .scroll-to-top-img {
-  background-color: #fff;
+  background-color: #1296db;
   width: 90rpx;
   height: 90rpx;
   border-radius: 50%;
@@ -725,23 +759,23 @@ video {
 
 /* 解决内联元素过长撑开页面的问题：超过650rpx自动换行 */
 .wxParse .inline {
-  display: inline-block;
+  display: block;
   margin: 0;
   padding: 0;
-  max-width: 650rpx ;
-  float: left;
-  overflow: hidden ;
+  max-width: 650rpx;
+  /* float: left; */
+  overflow: hidden;
   text-overflow: ellipsis;
-  white-space: normal ;
+  white-space: normal;
   word-wrap: break-word;
 }
-.wxParse .p{
-  display: inline-block;
-  max-width: 650rpx ;
-  float: left;
-  overflow: hidden ;
+.wxParse .p {
+  /* display: inline; */
+  max-width: 650rpx;
+  /* float: left; */
+  overflow: hidden;
   text-overflow: ellipsis;
-  white-space: normal ;
+  white-space: normal;
   word-wrap: break-word;
 }
 </style>

@@ -97,14 +97,14 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="wxss">
 /* @import url("~mpvue-wxparse/src/wxParse.css"); */
 page {
   background: rgb(241, 241, 241);
 }
 .page {
   margin: 30rpx 30rpx;
-  width: 630rpx;
+  /* width: 630rpx; */
 }
 
 .applet_notice{

@@ -356,7 +356,7 @@ export default {
 }
 .tips {
   margin: 20rpx 30rpx;
-  width: 630rpx;
+  width: 690rpx;
   height: auto;
   padding: 10px 15px;
   border-radius: 10px;

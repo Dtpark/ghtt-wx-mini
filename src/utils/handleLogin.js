@@ -70,14 +70,14 @@ async function isLogin() {
             return;
         } else {
             // session3rd 不存在，重新执行登录流程
-            doLogin();
+            await doLogin();
         }
 
 
     } catch (e) {
         // session_key 已经过期，重新执行登录流程
         // console.log(e);
-        doLogin();
+        await doLogin();
 
     }
     // let checkSession = await wxAPI.checkSession();

@@ -37,6 +37,8 @@ const getNoticeListUrl = baseUrl + 'notice/list';
 const getNoticeDetailUrl = baseUrl + 'notice/detail';
 
 const forumDetailUrl = baseUrl + 'forum/detail';
+const forumListUrl = baseUrl + 'forum/list';
+const forumInfoUrl = baseUrl + 'forum/info';
 
 
 export default {
@@ -58,5 +60,7 @@ export default {
   getBannerUrl,
   getNoticeListUrl,
   getNoticeDetailUrl,
-  forumDetailUrl
+  forumDetailUrl,
+  forumListUrl,
+  forumInfoUrl
 }

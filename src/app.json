@@ -1,5 +1,6 @@
 {
   "pages": [
+
     "pages/index/main",
     "pages/notice/detail/main",
 
@@ -8,10 +9,12 @@
 
     "pages/tools/list/main",
     "pages/classroom/main",
+    "pages/forum/forum/main",
 
     "pages/forum/detail/main",   
 
     "pages/setting/main",
+    "pages/me/main",
     "pages/edusys/main",
     "pages/campuscardsys/main",
 
@@ -45,7 +48,7 @@
       "selectedIconPath": "static/tabs/tools_HL.png"
     }, {
       "text": "设置",
-      "pagePath": "pages/setting/main",
+      "pagePath": "pages/me/main",
       "iconPath": "static/tabs/setting.png",
       "selectedIconPath": "static/tabs/setting_HL.png"
     }],

@@ -1,4 +1,6 @@
 {
   "usingComponents": {},
-  "navigationBarTitleText": "应用"
+  "navigationBarTitleText": "应用",
+  "navigationBarBackgroundColor": "#1296db",
+  "navigationBarTextStyle" : "white"
 }

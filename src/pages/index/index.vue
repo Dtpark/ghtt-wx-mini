@@ -19,7 +19,7 @@
     </div>
     <!-- 顶部banner结束 -->
     <!-- 分割线开始 -->
-    <div class="applet_br"></div>
+    <!-- <div class="applet_br"></div> -->
     <!-- 分割线结束 -->
 
     <!-- 通知公告开始 -->
@@ -44,7 +44,10 @@
                     :data-para="item"
                     class="weui-media-box__desc"
                     hover-class="weui-cell_active"
-                  >[ {{item['type']}} ] {{ item['title'] }}</div>
+                  >
+                    <span class="applet_notice_type">[ {{item['type']}} ]</span>
+                    <span class="applet_notice_title">{{ item['title'] }}</span>
+                  </div>
                 </swiper-item>
               </block>
             </swiper>
@@ -109,7 +112,7 @@
         <div class="weui-cell__bd">一卡通</div>
         <div class="weui-cell__ft weui-cell__ft_in-access">完整记录</div>
       </div>
-      <div class="applet_campuscard_box">
+      <div class="applet_campuscard_box shadow-blur">
         <div class="applet_campuscard_detail">
           <div class="applet_campuscard_hd">
             <div class="applet_campuscard_hd_left">{{ date }}</div>
@@ -196,12 +199,12 @@ export default {
       todayCurriculum: [],
       // 课程背景色
       backgroundcolor: [
-        "background: linear-gradient(to right, rgb(112, 230, 255) , rgb(166, 218, 245));",
-        "background: linear-gradient(to right, rgb(172, 137, 238) , rgb(173, 197, 255));",
-        "background: linear-gradient(to right, rgb(107, 221, 106) , rgb(192, 243, 169));",
-        "background: linear-gradient(to right, rgb(250, 206, 155) , rgb(253, 241, 142));",
-        "background: linear-gradient(to right, rgb(112, 230, 255) , rgb(166, 218, 245));",
-        "background: linear-gradient(to right, rgb(112, 230, 255) , rgb(166, 218, 245));"
+        "background: linear-gradient(to right, #0081ff , #1cbbb4);",
+        "background: linear-gradient(to right, #39b54a , #8dc63f);",
+        "background: linear-gradient(to right, #f43f3b , #ec008c);",
+        "background: linear-gradient(to right, #ff9700 , #ed1c24);",
+        "background: linear-gradient(to right, #9000ff , #5e00ff);",
+        "background: linear-gradient(to right, #ec008c , #6739b6);"
       ],
 
       // 一卡通余额
@@ -216,8 +219,8 @@ export default {
     /**
      * 获取轮播图url 和 今日日期
      */
-    getBanner(that) {
-      // let that = this;
+    getBanner() {
+      let that = this;
       that.$wxAPI.request(that.$url.getBannerUrl, {}, "POST").then(success => {
         switch (success.data.errcode) {
           case 0:
@@ -237,11 +240,12 @@ export default {
     /**
      * 获取通知公告列表
      */
-    getNoticeList(that) {
-      // let that = this;
+    getNoticeList() {
+      let that = this;
       that.$wxAPI
         .request(that.$url.getNoticeListUrl, {}, "POST")
         .then(success => {
+          // console.log(typeof success.data.count)
           if (success.data.count > 1) {
             that.noticeList = success.data.noticeList;
             that.number = 2;
@@ -278,8 +282,8 @@ export default {
     /**
      * 判断是否绑定教务系统
      */
-    isBindEduSys(that) {
-      // let that = this;
+    isBindEduSys() {
+      let that = this;
       let edubind = wx.getStorageSync("edubind");
       // console.log(edubind);
       // return false;
@@ -313,8 +317,8 @@ export default {
     /**
      * 获取今日课表
      */
-    getTodayTable(that) {
-      // let that = this;
+    async getTodayTable() {
+      let that = this;
       // 取出登录态标识
       let session3rd = wx.getStorageSync("session3rd");
       let edubind = wx.getStorageSync("edubind");
@@ -338,7 +342,23 @@ export default {
                 break;
               case 10:
                 // 登录过期，重新登录
-                that.$login.doLogin();
+                wx.showModal({
+                  title: "提示", //提示的标题,
+                  content: "登录状态过期，点击确定重新登录", //提示的内容,
+                  showCancel: false, //是否显示取消按钮
+                  confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
+                  confirmColor: "#3CC51F", //确定按钮的文字颜色,
+                  success: res => {
+                    if (res.confirm) {
+                      // console.log('用户点击确定')
+                      that.$login.doLogin();
+                      that.getTodayTable;
+
+                    } else if (res.cancel) {
+                      // console.log('用户点击取消')
+                    }
+                  }
+                });
                 break;
               default:
                 wx.showModal({
@@ -363,8 +383,8 @@ export default {
     /**
      * 判断是否绑定一卡通系统
      */
-    isBindCampuscard(that) {
-      // let that = this;
+    isBindCampuscard() {
+      let that = this;
       let campuscardbind = wx.getStorageSync("campuscardbind");
       switch (campuscardbind) {
         case "unbind":
@@ -392,8 +412,8 @@ export default {
     /**
      * 获取今日账单
      */
-    getTodayExpenses(that) {
-      // let that = this;
+    getTodayExpenses() {
+      let that = this;
       let session3rd = wx.getStorageSync("session3rd");
       let campuscard_bind = wx.getStorageSync("campuscardbind");
       if (session3rd && campuscard_bind) {
@@ -412,7 +432,22 @@ export default {
                 break;
               case 10:
                 // 登录过期，重新登录
-                that.$login.doLogin();
+                wx.showModal({
+                  title: "提示", //提示的标题,
+                  content: "登录状态过期，点击确定重新登录", //提示的内容,
+                  showCancel: false, //是否显示取消按钮
+                  confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
+                  confirmColor: "#3CC51F", //确定按钮的文字颜色,
+                  success: res => {
+                    if (res.confirm) {
+                      // console.log('用户点击确定')
+                      that.$login.doLogin();
+                      that.getTodayExpenses;
+                    } else if (res.cancel) {
+                      // console.log('用户点击取消')
+                    }
+                  }
+                });
                 break;
               default:
                 wx.showModal({
@@ -438,25 +473,25 @@ export default {
   /**
    * 生命周期函数
    */
-  mounted() {
+  async mounted() {
     let that = this;
     wx.showLoading({
       title: "加载中",
       mask: true
     });
     // 判断是否登录
-    that.$login
+    await that.$login
       .isLogin()
       .then(() => {
         // 已经登录
         // 获取轮播图
-        that.getBanner(that);
-        // 获取通知公告[放在onshow（）]
-        that.getNoticeList(that);
+        that.getBanner();
+        // 获取通知公告[]
+        that.getNoticeList();
         // 检查教务系统绑定状态
-        that.isBindEduSys(that);
+        that.isBindEduSys();
         // 检查一卡通绑定状态
-        that.isBindCampuscard(that);
+        that.isBindCampuscard();
 
         let date = new Date();
         let hour = date.getHours();
@@ -466,27 +501,23 @@ export default {
           // 查看是否绑定教务系统
           if (wx.getStorageSync("edubind") == "bind" && that.week == "*") {
             // 绑定了教务系统,获取今日课表
-            that.getTodayTable(that);
+            that.getTodayTable();
           }
           // 查看是否绑定一卡通系统
           if (
             wx.getStorageSync("campuscardbind") == "bind" &&
-            that.balance == "*" &&
-            hour >= 8 &&
-            hour < 18 &&
-            day != 6 &&
-            day != 0
+            that.balance == "*"
           ) {
             // 绑定了一卡通系统,获取消费信息
-            that.getTodayExpenses(that);
+            that.getTodayExpenses();
           }
         }
-
         wx.hideLoading();
       })
       .catch(e => {
         console.log(e);
       });
+    await wx.hideLoading();
   },
   onShow() {
     let that = this;
@@ -499,9 +530,9 @@ export default {
 
     // console.log(that.week);
     // 检查教务系统绑定状态
-    that.isBindEduSys(that);
+    that.isBindEduSys();
     // 检查一卡通绑定状态
-    that.isBindCampuscard(that);
+    that.isBindCampuscard();
 
     wx.hideLoading();
   },
@@ -512,7 +543,7 @@ export default {
     let that = this;
 
     // 获取通知公告列表
-    that.getNoticeList(that);
+    that.getNoticeList();
     let date = new Date();
     let hour = date.getHours();
     let day = date.getDay();
@@ -527,14 +558,10 @@ export default {
       // 查看是否绑定一卡通系统
       if (
         wx.getStorageSync("campuscardbind") == "bind" &&
-        that.balance == "*" &&
-        hour >= 8 &&
-        hour < 18 &&
-        day != 6 &&
-        day != 0
+        that.balance == "*"
       ) {
         // 绑定了一卡通系统,获取消费信息
-        that.getTodayExpenses(that);
+        that.getTodayExpenses();
       }
     }
     wx.stopPullDownRefresh();
@@ -580,7 +607,7 @@ page {
   margin-left: 30rpx;
   height: 2px;
   background: rgba(255, 255, 255, 1);
-  border-bottom: darkgray solid 1px;
+  border-bottom: #d9d9d9 solid 1rpx;
 }
 /* 分割线样式结束 */
 
@@ -638,8 +665,9 @@ page {
   width: 200rpx;
   /* min-height: 100rpx; */
   margin: 0 24rpx 0 0;
-  border-radius: 20rpx;
-  background: linear-gradient(to right, rgb(112, 230, 255), rgb(166, 218, 245));
+  border-radius: 10rpx;
+  /* background: linear-gradient(to right, rgb(112, 230, 255), rgb(166, 218, 245)); */
+  background: linear-gradient(to right, #0081ff , #1cbbb4);
   color: white;
   text-align: left;
   display: inline-block;
@@ -672,10 +700,11 @@ page {
 .applet_campuscard_detail {
   width: 100%;
   height: 414rpx;
-  border-radius: 20rpx;
+  border-radius: 15rpx;
   /* background: linear-gradient(to right, rgb(107, 221, 106) , rgb(192, 243, 169)); */
   /* background: linear-gradient(to right, rgb(150,0,164) , rgb(35,6,37)); */
   background: linear-gradient(to right, rgb(45, 150, 242), rgb(115, 229, 254));
+  /* background: linear-gradient(to right, #0081ff , #1cbbb4); */
   /* background: linear-gradient(to right, lightgray , darkgray);  */
 
   color: white;
@@ -706,7 +735,7 @@ page {
   width: 100%;
   text-align: center;
   display: inline-block;
-  margin-top: 75rpx;
+  margin-top: 80rpx;
   text-align: center;
 }
 .applet_campuscard_label {
@@ -724,7 +753,7 @@ page {
   height: 30rpx;
   font-size: 28rpx;
   position: absolute;
-  bottom: 10rpx;
+  bottom: 30rpx;
   padding: 30rpx 30rpx;
   /* display: inline-block; */
 }
@@ -736,7 +765,7 @@ page {
 }
 .applet_campuscard_ft_content {
   display: inline-block;
-  width: 70%;
+  width: 78%;
   float: left;
   height: 100%;
 }
