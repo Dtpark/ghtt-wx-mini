@@ -14,7 +14,7 @@
         <view class="item_list">第{{ dateList[0][dateIndex[0]] }}周</view>
         <!-- 天 -->
         <view class="item_list">星期{{ dateList[1][dateIndex[1]] }}</view>
-        <img src="/static/images/pulldown.png">
+        <text class="cuIcon-unfold text-black"></text>
       </view>
     </picker>
     <!-- 时间选择器结束 -->
@@ -33,7 +33,7 @@
         <view class="item_list">{{ roomList[0][roomIndex[0]] }}楼</view>
         <!-- 层 -->
         <view class="item_list">{{ roomList[1][roomIndex[1]] }}层</view>
-        <img src="/static/images/pulldown.png">
+        <text class="cuIcon-unfold text-black"></text>
       </view>
     </picker>
     <!-- 地点选择器结束 -->

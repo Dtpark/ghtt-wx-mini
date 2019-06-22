@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "wxparser": "plugin://wxparserPlugin/wxparser"
+  },
+  "navigationBarTitleText": "新闻详情",
+  "navigationBarBackgroundColor": "white",
+  "navigationBarTextStyle" : "black",
+  "navigationStyle": "default"
+}

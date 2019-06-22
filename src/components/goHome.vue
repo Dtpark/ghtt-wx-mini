@@ -1,5 +1,6 @@
 <template functional>
     <div class="goHome">
+        <!-- <text class="cuIcon-homefill text-blue" @click="goHome"></text> -->
         <img src="/static/images/home.png" @click="goHome">
     </div>
 </template>

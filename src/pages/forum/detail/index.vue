@@ -3,11 +3,12 @@
     <!-- 头部开始 -->
     <div class="header-fix">
       <div class="fix-btn" @click="toIndex">
-        <img class="detail-icon" src="/static/images/index.png">
+        <text class="cuIcon-home xl text-gh"></text>
         首页
       </div>
       <button class="fix-btn share-btn" open-type="share">
-        <img class="detail-icon" src="/static/images/share.png">分享
+        <text class="cuIcon-share xl text-gh"></text>
+        分享
       </button>
     </div>
     <!-- 头部结束 -->
@@ -22,18 +23,18 @@
             <div class="thread_data-sub">
               <div class="thread_data-info">
                 <!-- 浏览量 -->
-                <img class="detail-icon" src="/static/images/views.png">
+                <text class="cuIcon-attention text-gh"> </text>
                 <div>{{thread_data.views}}</div>
                 <!-- 回复数 -->
-                <img class="detail-icon" src="/static/images/reply.png">
+                <text class="cuIcon-message text-gh"> </text>
                 <div>{{thread_data.replies}}</div>
               </div>
               <!-- 版块名称 -->
               <block v-if="thread_data.fid_name">
-                <div class="thread_data-fid">{{thread_data.fid_name}}</div>
+                <div class="cu-tag line-gh">{{thread_data.fid_name}}</div>
               </block>
               <block v-else>
-                <div class="thread_data-fid">群组</div>
+                <div class="cu-tag line-gh">群组</div>
               </block>
             </div>
           </div>
@@ -65,7 +66,8 @@
             <!-- 楼主信息结束 -->
 
             <!-- 主题内容开始 -->
-            <wxParse :content="thread_data.message"/>
+            <!-- <wxParse :content="thread_data.message"/> -->
+            <wxparser :rich-text="thread_data.message" />
             <!-- <template is="wxParse" data="{{wxParseData:thread_data.message.nodes}}"/> -->
             <!-- 主题内容结束 -->
 
@@ -139,7 +141,8 @@
                 <!-- 回复内容开始 -->
                 <!-- <block v-for="(item, index) in article.message" :key='index'> -->
                 <!-- <block v-if="index == articleIndex"> -->
-                <wxParse :content="postItem.message"/>
+                <!-- <wxParse :content="postItem.message"/> -->
+                <wxparser :rich-text="postItem.message" />
                 <block v-if="postItem.post_image_list">
                   <block v-for="(itemlist, idx) in postItem.post_image_list" :key="idx">
                     <div>
@@ -180,12 +183,13 @@
   </div>
 </template>
 <script>
-import wxParse from "mpvue-wxparse";
+// import wxParse from "mpvue-wxparse";
+let plugin = requirePlugin("wxparserPlugin");
 
 export default {
-  components: {
-    wxParse
-  },
+  // components: {
+  //   wxParse
+  // },
   data() {
     return {
       thread_data: {
@@ -242,9 +246,18 @@ export default {
         .then(resp => {
           if (resp.data.err_code == 0) {
             // 请求数据成功
+            // that.articleList = {};
             that.articleList = resp.data.data.post_list;
+            // that.thread_data = {
+            //   un_image_attach: 0,
+            //   price: 0
+            // };
             that.thread_data = resp.data.data.thread_data;
             that.new_reader = 0;
+            // that.$set(that.articleList, resp.data.data.post_list);
+            // that.$set(that.thread_data, resp.data.data.thread_data);
+            // that.$set(that.new_reader, 0);
+            that.$forceUpdate();
           }
         })
         .catch(e => {
@@ -280,7 +293,7 @@ export default {
   /**
    * 生命周期函数--监听页面加载
    */
-  async mounted() {
+  mounted() {
     let that = this;
     let options = that.$root.$mp.query;
     wx.showLoading({
@@ -295,8 +308,14 @@ export default {
       that.page_index = 0;
       that.new_reader = 1;
 
+      that.articleList = {};
+      that.thread_data = {
+        un_image_attach: 0,
+        price: 0
+      };
+
       // 获取帖子内容
-      await that.reloadIndex();
+      that.reloadIndex();
       wx.hideLoading();
     } else {
       wx.hideLoading();
@@ -395,7 +414,7 @@ export default {
 };
 </script>
 <style>
-@import url("~mpvue-wxparse/src/wxParse.css");
+/* @import url("~mpvue-wxparse/src/wxParse.css"); */
 /* p{
   overflow-x: hidden;
   max-width: 100%;
@@ -490,17 +509,6 @@ export default {
 
 .thread_data-info view {
   margin-right: 16rpx;
-}
-
-.thread_data-fid {
-  height: 30rpx;
-  line-height: 30rpx;
-  font-size: 22rpx;
-  border-radius: 5rpx;
-  border: 0.1rpx solid #1296db;
-  color: #1296db;
-  padding: 2px 6rpx;
-  margin-top: 5rpx;
 }
 
 .thread_content-cell {
@@ -758,26 +766,23 @@ video {
 }
 
 /* 解决内联元素过长撑开页面的问题：超过650rpx自动换行 */
-.wxParse .inline {
+/* .wxParse .inline {
   display: block;
   margin: 0;
   padding: 0;
   max-width: 650rpx;
-  /* float: left; */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
   word-wrap: break-word;
 }
 .wxParse .p {
-  /* display: inline; */
   max-width: 650rpx;
-  /* float: left; */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
   word-wrap: break-word;
-}
+} */
 </style>
 
 

@@ -2,5 +2,6 @@
   "usingComponents": {
     "wxparser": "plugin://wxparserPlugin/wxparser"
   },
-  "navigationBarTitleText": "通知详情"
+  "navigationBarTitleText": "观海听涛",
+  "enablePullDownRefresh": false
 }

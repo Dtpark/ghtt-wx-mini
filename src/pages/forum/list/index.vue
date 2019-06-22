@@ -3,48 +3,7 @@
     <div class="container">
       <div class="page-body">
         <div class="page__bd">
-          <!-- 版区头部开始 -->
-          <div class="forum">
-            <div class="forum_info">
-              <div class="forum_title">{{forum_data.name}}</div>
-              <div class="forum_note">主题：{{forum_data.threads}} 帖子：{{forum_data.posts}}</div>
-            </div>
-            <div class="top_subject" v-if="has_top">
-              <div class="zan-tag zan-tag--primary">置顶贴</div>
-              <!-- <div class="cu-tag bg-gh">置顶贴</div> -->
-              <div
-                @click="toDetail"
-                class="zan-ellipsis"
-                :data-tid="item.tid"
-                v-for="(item, index) in few_top_thread_data"
-                :key="index"
-              >{{item.subject}}</div>
-              <div @click="show_more_top" class="top_subject_item" v-if="show_more">查看更多</div>
-            </div>
-          </div>
-          <!-- 版区头部结束 -->
           <div>
-            <!-- 帖子分类开始 -->
-            <div class="thread_order">
-              <div
-                @click="get_recent_thread"
-                class="thread_order_item"
-                :class="(recent == 1)? 'thread_order_border':''"
-              >最新</div>
-              <div
-                @click="get_hot_thread"
-                class="thread_order_item"
-                :class="order_by_views==1? 'thread_order_border':''"
-              >热门</div>
-              <div
-                @click="get_digest_thread"
-                class="thread_order_item"
-                :class=" digest==1? 'thread_order_border':''"
-              >精华</div>
-            </div>
-            <!-- 帖子分类结束 -->
-
-            <!-- 帖子列表开始 -->
             <div
               @click="toDetail"
               class="article"
@@ -96,8 +55,8 @@
           </div>
         </div>
         <div class="weui-loadmore">
-            <div class="weui-loading"></div>
-            <div class="weui-loadmore__tips">正在加载</div>
+          <div class="weui-loading"></div>
+          <div class="weui-loadmore__tips">正在加载</div>
         </div>
         <!-- <template is="zan-loadmore" data="{{loading:have_data}}"></template>
         <template is="zan-loadmore" data="{{nodata:no_data}}"></template>
@@ -116,35 +75,28 @@
 export default {
   data() {
     return {
-      fid: 207,
-      forum_data: {},
-      few_top_thread_data: {},
-      top_thread_data: {},
-      show_more: false,
       articleList: {},
-      page_size: 5,
+      // 页面主题条数
+      page_size: 10,
       page_index: 0,
-      recent: 1,
-      digest: 0,
-      order_by_views: 0,
-      has_top: 0,
-      reload_index: 1,
-      no_data: !1,
-      have_data: !1,
-      nomore_data: !1,
-      lite_switch: false,
-      scroll_show: false
+      loading_hidden: true,
+      loading_msg: "加载中...",
+      scroll_show: false,
+      no_data: false,
+      have_data: false,
+      nomore_data: false,
+      lite_switch: false
     };
   },
   methods: {
+    /**
+     * 加载帖子列表
+     */
     reloadIndex() {
       let that = this;
       let data = {
-        fid: that.fid,
         page_size: that.page_size,
-        page_index: 0,
-        digest: that.digest,
-        order_by_views: that.order_by_views
+        page_index: 0
       };
       that.$wxAPI
         .request(that.$url.forumListUrl, data, "POST")
@@ -171,26 +123,6 @@ export default {
           console.log(e);
         });
     },
-    get_forum_info() {
-      let that = this;
-      let data = {
-        fid: that.fid
-      };
-      that.$wxAPI
-        .request(that.$url.forumInfoUrl, data, "POST")
-        .then(success => {
-          if (success.data.err_code == 0) {
-            that.forum_data = success.data.data.forum_data;
-            that.few_top_thread_data = success.data.data.few_top_thread_data;
-            that.top_thread_data = success.data.data.top_thread_data;
-            that.show_more = success.data.data.show_more;
-            that.has_top = success.data.data.has_top;
-          }
-        })
-        .catch(e => {
-          console.log(e);
-        });
-    },
     /**
      * 跳转到帖子详情
      */
@@ -202,48 +134,10 @@ export default {
       });
     },
     /**
-     * 显示全部置顶帖
-     */
-    show_more_top() {
-      let that = this;
-      that.few_top_thread_data = that.top_thread_data;
-      that.show_more = 0;
-    },
-    /**
-     * 显示最新帖子
-     */
-    get_recent_thread() {
-      let that = this;
-      that.recent = 1;
-      that.digest = 0;
-      that.order_by_views = 0;
-      that.reloadIndex();
-    },
-    /**
-     * 显示热门帖子
-     */
-    get_hot_thread() {
-      let that = this;
-      that.recent = 0;
-      that.digest = 0;
-      that.order_by_views = 1;
-      that.reloadIndex();
-    },
-    /**
-     * 显示精华帖子
-     */
-    get_digest_thread() {
-      let that = this;
-      that.recent = 0;
-      that.digest = 1;
-      that.order_by_views = 0;
-      that.reloadIndex();
-    },
-    /**
      * 返回首页
      */
-    goHome(){
-        wx.switchTab({ url: '/pages/index/main' });
+    goHome() {
+      wx.switchTab({ url: "/pages/index/main" });
     },
     /**
      * 返回顶部
@@ -265,43 +159,17 @@ export default {
       that.scroll_show = false;
     }
   },
-  async mounted() {
+  /**
+   * 生命周期函数
+   */
+  mounted() {
     let that = this;
-    let options = that.$root.$mp.query;
     wx.showLoading({
-      title: '加载中', //提示的内容,
-      mask: true, //显示透明蒙层，防止触摸穿透
+      title: "加载中", //提示的内容,
+      mask: true //显示透明蒙层，防止触摸穿透
     });
-    if (options.fid) {
-      that.fid = options.fid;
-      await that.reloadIndex();
-      await that.get_forum_info();
-      wx.hideLoading();
-    } else {
-      // 没有版块id参数, 返回首页
-      wx.hideLoading();
-      wx.showModal({
-        title: "提示", //提示的标题,
-        content: "没有该内容，请返回首页", //提示的内容,
-        showCancel: false, //是否显示取消按钮,
-        confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
-        confirmColor: "#3CC51F", //确定按钮的文字颜色,
-        success: res => {
-          if (res.confirm) {
-            // console.log('用户点击确定')
-            wx.switchTab({ url: "/pages/index/main" });
-          }
-        }
-      });
-    }
-  },
-  onShow() {
-    let that = this;
-    if (that.reload_index == 1) {
-      that.reloadIndex();
-      that.get_forum_info();
-      that.reload_index = 0;
-    }
+    that.reloadIndex();
+    wx.hideLoading();
   },
   /**
    * 触底函数--加载更多帖子
@@ -315,11 +183,8 @@ export default {
     });
     that.have_data = true;
     let data = {
-      fid: that.fid,
       page_size: that.page_size,
-      page_index: that.page_index + 1,
-      digest: that.digest,
-      order_by_views: that.order_by_views
+      page_index: that.page_index + 1
     };
     that.$wxAPI
       .request(that.$url.forumListUrl, data, "POST")
@@ -357,27 +222,10 @@ export default {
 };
 </script>
 <style>
-.container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  justify-content: space-between;
-  font-size: 28rpx;
-  padding: 0 20rpx;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-}
-.page-body {
-  width: 100%;
-  flex-grow: 1;
-  overflow-x: hidden;
+.container{
+    padding: 10rpx 0;
 }
 
-.page__bd {
-  margin-top: 20rpx;
-}
-
-/* index开始 */
 .article {
   background-color: #fff;
   /* padding:20rpx; */
@@ -538,68 +386,6 @@ export default {
   border-radius: 50%;
   opacity: 0.9;
 }
-/* index结束 */
-
-.article-info .article-by {
-  color: #c7c7c7;
-  margin-right: 20rpx;
-}
-
-.forum {
-  padding: 20rpx;
-  margin-top: 20rpx;
-  background-color: #fff;
-}
-
-.forum_info {
-  padding: 15rpx 0;
-}
-
-.top_subject {
-  border-top: 1px solid #efefef;
-}
-
-.top_subject_item {
-  font-size: 26rpx;
-  color: #1296db;
-}
-
-.forum_title {
-  font-size: 36rpx;
-}
-
-.forum_note {
-  color: #999;
-  font-size: 14px;
-}
-
-.top_subject .zan-tag {
-  margin: 20rpx 0 10rpx 0;
-}
-
-.top_subject .zan-ellipsis {
-  margin: 8rpx 0;
-}
-
-.thread_order {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  background-color: white;
-  margin-top: 20rpx;
-}
-
-.thread_order_item {
-  padding-top: 10rpx;
-  padding-bottom: 10rpx;
-  width: 33%;
-  text-align: center;
-}
-
-.thread_order_border {
-  border-bottom: 5rpx solid #1296db;
-}
 
 .edit-cell {
   z-index: 100;
@@ -616,23 +402,6 @@ export default {
   border-radius: 50%;
   opacity: 0.8;
 }
-.detail-icon {
-  width: 40rpx;
-  height: 40rpx;
-  margin-right: 15rpx;
-}
-/* 友赞样式 */
-.zan-tag {
-  display: inline-block;
-  position: relative;
-  box-sizing: border-box;
-  line-height: 16px;
-  padding: 0 5px;
-  border-radius: 2px;
-  font-size: 11px;
-  background: #1296db;
-  text-align: center;
-  color: #fff;
-}
 </style>
+
 

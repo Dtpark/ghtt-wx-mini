@@ -15,7 +15,8 @@
 
       <!-- 公告内容开始 -->
       <div class="applet_notice_bd">
-        <wxParse :content="content"/>
+        <!-- <wxParse :content="content"/> -->
+        <wxparser :rich-text="content" />
         <!-- <template is="wxParse" data="{{wxParseData:content.nodes}}" /> -->
       </div>
       <!-- 公告内容结束 -->
@@ -30,11 +31,12 @@
 
 <script>
 import goHome from "@/components/goHome";
-import wxParse from "mpvue-wxparse";
+// import wxParse from "mpvue-wxparse";
+let plugin = requirePlugin("wxparserPlugin");
 
 export default {
   components: {
-    wxParse,
+    // wxParse,
     goHome
   },
   data() {
@@ -69,7 +71,7 @@ export default {
               that.title = res.data.data.n_title;
               that.pv = res.data.data.pv;
               that.publish_time = res.data.data.create_time;
-              that.content = res.data.data.n_content;
+              that.content = res.data.data.n_content.replace(/&nbsp;/g,"\xa0");// 解决空格不被解析的问题
               break;
             default:
               wx.showModal({

@@ -9,8 +9,12 @@
 
     "pages/tools/list/main",
     "pages/classroom/main",
-    "pages/forum/forum/main",
 
+    "pages/tools/news/list/main",
+    "pages/tools/news/detail/main",
+    
+    "pages/forum/list/main",
+    "pages/forum/forum/main",
     "pages/forum/detail/main",   
 
     "pages/setting/main",
@@ -51,9 +55,13 @@
       "pagePath": "pages/me/main",
       "iconPath": "static/tabs/setting.png",
       "selectedIconPath": "static/tabs/setting_HL.png"
-    }],
-
-    
+    }],    
     "position": "bottom"
+  },
+  "plugins": {
+    "wxparserPlugin": {
+      "version": "0.2.1",
+      "provider": "wx9d4d4ffa781ff3ac"
+    }
   }
 }

@@ -40,6 +40,9 @@ const forumDetailUrl = baseUrl + 'forum/detail';
 const forumListUrl = baseUrl + 'forum/list';
 const forumInfoUrl = baseUrl + 'forum/info';
 
+const hitwhNewsUrl = baseUrl + 'news/list'
+const hitwhNewsDetailUrl = baseUrl + 'news/detail'
+
 
 export default {
   
@@ -62,5 +65,7 @@ export default {
   getNoticeDetailUrl,
   forumDetailUrl,
   forumListUrl,
-  forumInfoUrl
+  forumInfoUrl,
+  hitwhNewsUrl,
+  hitwhNewsDetailUrl
 }

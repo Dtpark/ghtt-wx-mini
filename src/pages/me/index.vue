@@ -2,12 +2,13 @@
   <div class="page">
     <div class="UCenter-bg">
       <img :src="avatarUrl" class="cu-avatar round">
-      <div class="margin-top-sm text-xl">{{ nickName }}
-      <!-- <text class="text-df">v2.0</text> -->
+      <div class="margin-top-sm text-xl">
+        {{ nickName }}
+        <!-- <text class="text-df">v2.0</text> -->
       </div>
       <!-- <div class="margin-top-sm">
         <p>{{ nickName }}</p>
-      </div> -->
+      </div>-->
       <img src="https://image.weilanwl.com/gif/wave.gif" class="gif-wave">
     </div>
     <div class="padding flex text-center text-grey bg-white shadow-warp">
@@ -54,17 +55,25 @@
         </div>
       </div>
       <div class="cu-item arrow">
+        <navigator class="content" url="/pages/about/test/list" hover-class="none">
+          <text class="cuIcon-creativefill text-orange"></text>
+          <text class="text-grey">Bug测试</text>
+        </navigator>
+      </div>-->
+    </div>
+    <div class="cu-list menu card-menu margin-top-x1 margin-bottom-xl shadow-lg radius">
+      <div class="cu-item arrow">
         <button class="cu-btn content" open-type="feedback">
           <text class="cuIcon-writefill text-cyan"></text>
           <text class="text-grey">意见反馈</text>
         </button>
       </div>
       <div class="cu-item arrow">
-        <navigator class="content" url="/pages/about/test/list" hover-class="none">
-          <text class="cuIcon-creativefill text-orange"></text>
-          <text class="text-grey">Bug测试</text>
-        </navigator>
-      </div> -->
+        <button class="content" open-type="contact" hover-class="none">
+          <text class="cuIcon-message text-grey"></text>
+          <text class="text-grey">联系客服</text>
+        </button>
+      </div>
     </div>
     <div class="cu-tabbar-height"></div>
   </div>
@@ -166,6 +175,9 @@ map,
 .mapBox {
   width: 750rpx;
   height: 300rpx;
+}
+.cu-list.menu > .cu-item ._button.content {
+  text-align: left;
 }
 </style>
 

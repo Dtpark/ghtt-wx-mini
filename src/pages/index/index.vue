@@ -1,23 +1,26 @@
 <template>
   <div class="page">
+    <!-- 公众号关注组件开始 -->
+    <official-account></official-account>
+    <!-- 公众号关注组件结束 -->
     <!-- 顶部banner开始 -->
     <div class="applet_banner">
       <swiper
+        class="screen-swiper square-dot"
         indicator-dots="true"
+        circular="true"
         autoplay="true"
         interval="3000"
         duration="1000"
-        indicator-color="rgba(255,255,255,0.3)"
-        indicator-active-color="#ffffff"
       >
-        <block v-for="(item, index) in bannerImgUrls" :key="index">
-          <swiper-item>
-            <img class="applet_banner_img" :src="item">
-          </swiper-item>
-        </block>
+        <swiper-item v-for="(item, index) in bannerImgUrls" :key="index">
+          <img class="applet_banner_img" :src="item" mode="aspectFill">
+          <!-- <video src="{{item.url}}" autoplay loop muted show-play-btn="{{false}}" controls="{{false}}" objectFit="cover" wx:if="{{item.type=='video'}}"></video> -->
+        </swiper-item>
       </swiper>
     </div>
     <!-- 顶部banner结束 -->
+
     <!-- 分割线开始 -->
     <!-- <div class="applet_br"></div> -->
     <!-- 分割线结束 -->
@@ -35,6 +38,7 @@
               vertical="true"
               autoplay="true"
               interval="3000"
+              circular="true"
               :display-multiple-items="number"
             >
               <block v-for="(item, index) in noticeList" :key="index">
@@ -126,7 +130,7 @@
           <div class="applet_campuscard_ft">
             <div class="applet_campuscard_ft_title">今日交易:</div>
             <div v-if="bills && bills['data'].length > 0" class="applet_campuscard_ft_content">
-              <swiper vertical="true" autoplay="true" interval="4000">
+              <swiper vertical="true" autoplay="true" interval="4000" circular="true">
                 <block v-for="(item, index) in bills['data']" :key="index">
                   <swiper-item class="applet_campuscard_expenses_item">
                     <div class="applet_campuscard_expenses_left">
@@ -275,6 +279,14 @@ export default {
             url: "/pages/forum/detail/main?tid=" + notice.id
           });
           break;
+        case "新闻":
+          wx.navigateTo({
+            url:
+              "/pages/tools/news/detail/main?column=1024&id=" +
+              notice.id +
+              "&date=" +
+              notice.date
+          });
       }
       return false;
     },
@@ -317,7 +329,7 @@ export default {
     /**
      * 获取今日课表
      */
-    async getTodayTable() {
+    getTodayTable() {
       let that = this;
       // 取出登录态标识
       let session3rd = wx.getStorageSync("session3rd");
@@ -342,23 +354,7 @@ export default {
                 break;
               case 10:
                 // 登录过期，重新登录
-                wx.showModal({
-                  title: "提示", //提示的标题,
-                  content: "登录状态过期，点击确定重新登录", //提示的内容,
-                  showCancel: false, //是否显示取消按钮
-                  confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
-                  confirmColor: "#3CC51F", //确定按钮的文字颜色,
-                  success: res => {
-                    if (res.confirm) {
-                      // console.log('用户点击确定')
-                      that.$login.doLogin();
-                      that.getTodayTable;
-
-                    } else if (res.cancel) {
-                      // console.log('用户点击取消')
-                    }
-                  }
-                });
+                that.$login.doLogin();
                 break;
               default:
                 wx.showModal({
@@ -432,22 +428,7 @@ export default {
                 break;
               case 10:
                 // 登录过期，重新登录
-                wx.showModal({
-                  title: "提示", //提示的标题,
-                  content: "登录状态过期，点击确定重新登录", //提示的内容,
-                  showCancel: false, //是否显示取消按钮
-                  confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
-                  confirmColor: "#3CC51F", //确定按钮的文字颜色,
-                  success: res => {
-                    if (res.confirm) {
-                      // console.log('用户点击确定')
-                      that.$login.doLogin();
-                      that.getTodayExpenses;
-                    } else if (res.cancel) {
-                      // console.log('用户点击取消')
-                    }
-                  }
-                });
+                that.$login.doLogin();
                 break;
               default:
                 wx.showModal({
@@ -667,7 +648,7 @@ page {
   margin: 0 24rpx 0 0;
   border-radius: 10rpx;
   /* background: linear-gradient(to right, rgb(112, 230, 255), rgb(166, 218, 245)); */
-  background: linear-gradient(to right, #0081ff , #1cbbb4);
+  background: linear-gradient(to right, #0081ff, #1cbbb4);
   color: white;
   text-align: left;
   display: inline-block;
@@ -700,10 +681,14 @@ page {
 .applet_campuscard_detail {
   width: 100%;
   height: 414rpx;
-  border-radius: 15rpx;
+  border-radius: 20rpx;
   /* background: linear-gradient(to right, rgb(107, 221, 106) , rgb(192, 243, 169)); */
   /* background: linear-gradient(to right, rgb(150,0,164) , rgb(35,6,37)); */
-  background: linear-gradient(to right, rgb(45, 150, 242), rgb(115, 229, 254));
+  background-size: 100%;
+  background-image: url(https://image.weilanwl.com/color2.0/cardBg.png);
+  background-repeat: no-repeat;
+  background-color: #1296db;
+  /* background-color: linear-gradient(to right, rgb(45, 150, 242), rgb(115, 229, 254)); */
   /* background: linear-gradient(to right, #0081ff , #1cbbb4); */
   /* background: linear-gradient(to right, lightgray , darkgray);  */
 

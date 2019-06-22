@@ -7,13 +7,13 @@
       :titleColor="'green'"
       :back-visible="true"
       :home-path="'/pages/index/main'"
-    ></navigationBar> -->
+    ></navigationBar>-->
     <!-- 周次选择开始 -->
     <div class="applet_curriculum_week_select">
       <picker @change="bindWeekChange" :value="week" :range="weeklist">
         <div class="applet_curriculum_picker">
-          <div class="applet_curriculum_picker_left">第{{ weeklist[week] }}周</div>
-          <img class="applet_curriculum_picker_right" src="/static/images/pulldown.png">
+          第{{ weeklist[week] }}周
+            <text class="cuIcon-unfold text-black"></text>
         </div>
       </picker>
     </div>
@@ -161,11 +161,12 @@ export default {
     /**
      * 获取周次课表信息
      */
-    getWeekTimeTable(week = "") {
+    getWeekTimeTable(week = "", type = 0) {
       let that = this;
       let session3rd = wx.getStorageSync("session3rd");
       let data = {
         session3rd: session3rd,
+        type: type,
         week: week
       };
       that.$wxAPI
@@ -212,7 +213,7 @@ export default {
   /**
    * 生命周期函数
    */
-  created() {
+  mounted() {
     let that = this;
     // 获取系统信息
     wx.getSystemInfo({
@@ -270,13 +271,19 @@ export default {
         console.log(e);
       });
   },
+  /**
+   * 下拉刷新
+   */
+  onPullDownRefresh() {
+    let that = this;
+    that.getWeekTimeTable(that.week, 1);
+    wx.stopPullDownRefresh();
+  },
 
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
-
-  }
+  onShareAppMessage: function() {}
 };
 </script>
 <style lang='wxss'>
@@ -300,22 +307,9 @@ page {
 .applet_curriculum_picker {
   width: 100%;
   height: auto;
-  display: inline-block;
-}
-.applet_curriculum_picker_left {
-  width: 70%;
-  height: auto;
-  float: left;
   text-align: center;
   font-size: 32rpx;
-  /* line-height: 5rpx; */
-}
-.applet_curriculum_picker_right {
-  width: 20%;
-  height: 50rpx;
-  float: left;
-  text-align: center;
-  vertical-align: middle;
+  /* display: inline-block; */
 }
 /* 周次选择器样式结束 */
 

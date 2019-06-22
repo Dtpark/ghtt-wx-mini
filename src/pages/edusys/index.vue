@@ -324,7 +324,7 @@ export default {
       that.$login
         .doLogin()
         .then(res => {
-          that.onLoad();
+          // that.onLoad();
         })
         .catch(e => {
           console.log(e);

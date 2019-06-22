@@ -1,19 +1,59 @@
 <template>
   <div class="page">
     <div class="page__bd">
-      <div class="cu-bar bg-white solid-bottom">
-        <div class="action">
-          <text class="cuIcon-title text-blue"></text>爱学习
+      <!-- 爱学习生活开始 -->
+      <div v-if="toolsList[0] != ''">
+        <div class="cu-bar bg-white solid-bottom margin-top">
+          <div class="action">
+            <text class="cuIcon-title text-red"></text>爱生活
+          </div>
+        </div>
+        <div class="weui-grids bg-white">
+          <block v-for="(item, index) in toolsList[0]" :key="index">
+            <navigator :url="item.url" class="weui-grid" hover-class="weui-grid_active">
+              <img class="weui-grid__icon" :src="item.logo">
+              <div class="weui-grid__label">{{ item.title }}</div>
+            </navigator>
+          </block>
         </div>
       </div>
-      <div class="weui-grids">
-        <block v-for="(item, index) in toolsList" :key="index">
-          <navigator :url="item.url" class="weui-grid" hover-class="weui-grid_active">
-            <img class="weui-grid__icon" :src="item.logo">
-            <div class="weui-grid__label">{{ item.title }}</div>
-          </navigator>
-        </block>
+      <!-- 爱生活结束 -->
+
+      <!-- 爱学习开始 -->
+      <div v-if="toolsList[1] != ''">
+        <div class="cu-bar bg-white solid-bottom margin-top">
+          <div class="action">
+            <text class="cuIcon-title text-orange"></text>爱学习
+          </div>
+        </div>
+        <div class="weui-grids bg-white">
+          <block v-for="(item, index) in toolsList[1]" :key="index">
+            <navigator :url="item.url" class="weui-grid" hover-class="weui-grid_active">
+              <img class="weui-grid__icon" :src="item.logo">
+              <div class="weui-grid__label">{{ item.title }}</div>
+            </navigator>
+          </block>
+        </div>
       </div>
+      <!-- 爱学习结束 -->
+      
+      <!-- 爱观海开始 -->
+      <div v-if="toolsList[2] != ''">
+        <div class="cu-bar bg-white solid-bottom margin-top">
+          <div class="action">
+            <text class="cuIcon-title text-blue"></text>爱观海
+          </div>
+        </div>
+        <div class="weui-grids bg-white">
+          <block v-for="(item, index) in toolsList[2]" :key="index">
+            <navigator :url="item.url" class="weui-grid" hover-class="weui-grid_active">
+              <img class="weui-grid__icon" :src="item.logo">
+              <div class="weui-grid__label">{{ item.title }}</div>
+            </navigator>
+          </block>
+        </div>
+      </div>
+      <!-- 爱观海结束 -->
     </div>
   </div>
 </template>
@@ -22,7 +62,7 @@ export default {
   data() {
     return {
       grids: [0, 1, 2, 3, 4, 5, 6, 7, 8],
-      toolsList: null
+      toolsList: []
     };
   },
   /**
@@ -63,9 +103,7 @@ export default {
 };
 </script>
 <style lang='wxss'>
-page {
-  background: white;
-}
+
 .weui-grid {
   padding: 20px 10px;
   width: 25%;

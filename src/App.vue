@@ -53,7 +53,7 @@ export default {
   -o-transition: width 2s;
 }
 page{
-  background: rgb(241, 241, 241);
+  background: #efefef;
 }
 
 /* 隐藏滚动条 */
