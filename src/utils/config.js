@@ -1,9 +1,11 @@
 // 用于封装待请求的API接口
 
-const baseUrl = 'https://mini.dtpark.top/index.php/';
+// const baseUrl = 'https://mini.dtpark.top/index.php/';
+const baseUrl = 'https://applet.ghtt.ihitwh.com/';
 // const baseUrl = 'http://mini.ghtt.com/index.php/';
 
 const loginUrl = baseUrl + 'login';
+const isLoginUrl = baseUrl + 'islogin';
 
 const eduBindUrl = baseUrl + 'edubind';
 
@@ -16,6 +18,8 @@ const weekCurriculumUrl= baseUrl + 'weektimetable';
 const todayCurriculumUrl = baseUrl + 'todaytimetable';
 
 const listCurriculumUrl = baseUrl + 'listtimetable';
+const addCurriculumUrl = baseUrl + 'timetable/add';
+const delCurriculumUrl = baseUrl + 'timetable/del';
 
 const campuscardInfoUrl = baseUrl + 'campuscardinfo';
 
@@ -43,16 +47,21 @@ const forumInfoUrl = baseUrl + 'forum/info';
 const hitwhNewsUrl = baseUrl + 'news/list'
 const hitwhNewsDetailUrl = baseUrl + 'news/detail'
 
+const gpaUrl = "https://shindo.sinaapp.com/gpa_auto"
+
 
 export default {
   
   loginUrl: loginUrl,
+  isLoginUrl,
   eduBindUrl: eduBindUrl,
   showInfoUrl: showInfoUrl,
   eduUnbindUrl: eduUnbindUrl,
   weekCurriculumUrl,
   todayCurriculumUrl,
   listCurriculumUrl,
+  addCurriculumUrl,
+  delCurriculumUrl,
   campuscardInfoUrl,
   campuscardBindUrl,
   campuscardUnbindUrl,
@@ -67,5 +76,6 @@ export default {
   forumListUrl,
   forumInfoUrl,
   hitwhNewsUrl,
-  hitwhNewsDetailUrl
+  hitwhNewsDetailUrl,
+  gpaUrl
 }

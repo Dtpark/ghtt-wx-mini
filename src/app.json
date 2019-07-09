@@ -1,26 +1,32 @@
 {
   "pages": [
-
+   
     "pages/index/main",
     "pages/notice/detail/main",
 
-    "pages/curriculum/week/main",
     "pages/campuscard/detail/main",
 
     "pages/tools/list/main",
     "pages/classroom/main",
 
+    "pages/curriculum/week/main",
+    "pages/curriculum/add/main",
+
     "pages/tools/news/list/main",
     "pages/tools/news/detail/main",
+
+    "pages/tools/gpa/main",
     
     "pages/forum/list/main",
     "pages/forum/forum/main",
     "pages/forum/detail/main",   
 
     "pages/setting/main",
-    "pages/me/main",
+    "pages/me/index/main",
     "pages/edusys/main",
     "pages/campuscardsys/main",
+    "pages/me/indexMoudel/main",
+   
 
     "pages/login/main", 
     
@@ -51,10 +57,10 @@
       "iconPath": "static/tabs/tools.png",
       "selectedIconPath": "static/tabs/tools_HL.png"
     }, {
-      "text": "设置",
-      "pagePath": "pages/me/main",
-      "iconPath": "static/tabs/setting.png",
-      "selectedIconPath": "static/tabs/setting_HL.png"
+      "text": "我的",
+      "pagePath": "pages/me/index/main",
+      "iconPath": "static/tabs/me.png",
+      "selectedIconPath": "static/tabs/me_HL.png"
     }],    
     "position": "bottom"
   },

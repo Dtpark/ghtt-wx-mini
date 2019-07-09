@@ -76,21 +76,21 @@
       <div>
         <p>重要提示：</p>
         <p>①M楼4层所有教室本学期无课，因此未显示，其他教学楼本学期无课的教室也未显示。建议平常自习时尽量不要选择这些教室，避免打扰考研的同学;</p>
-        <p>②以上数据根据[教务系统]课程信息，由程序自动计算得出，如有错误。请反馈;</p>
+        <p>②以上数据根据[教务系统]课程信息，由程序自动计算得出，如有错误请反馈;</p>
         <p>③课程数据库更新于{{ lasttime }}。</p>
       </div>
     </div>
     <!-- 提示结束 -->
 
     <!-- 返回首页开始 -->
-    <goHome ></goHome>
+    <goHome></goHome>
     <!-- 返回首页结束 -->
   </div>
 </template>
 <script>
 import goHome from "@/components/goHome";
 export default {
-  components:{
+  components: {
     goHome
   },
   data() {
@@ -109,7 +109,9 @@ export default {
       roomIndex: [0, 0],
 
       // 课程列表
-      roomInfo: null,
+      roomInfo: {
+        G: {}
+      },
       // 选择的周次
       week: null,
       // 选择的日期
@@ -207,33 +209,35 @@ export default {
   /**
    * 生命周期函数
    */
-  async created() {
+  async mounted() {
     let that = this;
     // console.log(wxAPI.request(url.classroomUrl, '', 'POST'));
-    wx.showLoading({
-      title: "加载中", //提示的内容,
-      mask: true //显示透明蒙层，防止触摸穿透
-    });
-    await that.$wxAPI
-      .request(that.$url.classroomUrl, "", "POST")
-      .then(success => {
-        that.dateIndex = [success.data.week - 1, success.data.day - 1];
-        that.roomInfo = success.data.roominfo;
-        that.week = success.data.week;
-        that.day = success.data.day;
-        that.lasttime = success.data.lasttime;
-        wx.hideLoading();
-      })
-      .catch(e => {
-        console.log(e);
-      })
+    if (that.lasttime == "*") {
+      // 已经有数据就不请求了（不是实时数据故不必要每次都刷新）
+      wx.showLoading({
+        title: "加载中", //提示的内容,
+        mask: true //显示透明蒙层，防止触摸穿透
+      });
+      await that.$wxAPI
+        .request(that.$url.classroomUrl, "", "POST")
+        .then(success => {
+          that.dateIndex = [success.data.week - 1, success.data.day - 1];
+          that.roomInfo = success.data.roominfo;
+          that.week = success.data.week;
+          that.day = success.data.day;
+          that.lasttime = success.data.lasttime;
+          wx.hideLoading();
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    } else {
+    }
   },
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
-
-  }
+  onShareAppMessage: function() {}
 };
 </script>
 <style scoped>

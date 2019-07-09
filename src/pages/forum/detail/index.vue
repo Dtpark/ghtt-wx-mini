@@ -23,10 +23,10 @@
             <div class="thread_data-sub">
               <div class="thread_data-info">
                 <!-- 浏览量 -->
-                <text class="cuIcon-attention text-gh"> </text>
+                <text class="cuIcon-attention margin-right-xs text-gh"> </text>
                 <div>{{thread_data.views}}</div>
                 <!-- 回复数 -->
-                <text class="cuIcon-message text-gh"> </text>
+                <text class="cuIcon-message margin-right-xs text-gh"> </text>
                 <div>{{thread_data.replies}}</div>
               </div>
               <!-- 版块名称 -->
@@ -164,32 +164,27 @@
           </div>
           <!-- 回复列表结束 -->
           <!-- 帖子页面结束 -->
-          <div class="weui-footer" :v-show="isBottom">
-            <div class="weui-footer__text">-没有更多了-</div>
-          </div>
+          <div class="cu-load line-black" :class="isBottom? 'loading': 'over'"></div>
         </div>
       </div>
       <div class="page-tail">
         <div class="need-login" @click="previewImage" :data-image_list="app_img">点此扫码下载观海app即可参与互动</div>
       </div>
       <!-- 返回顶部按钮开始 -->
-      <block v-if="scroll_show">
-        <div class="scroll-to-top" @click="scrollToTop">
-          <img class="scroll-to-top-img" src="/static/images/top.png">
-        </div>
-      </block>
+      <goHome></goHome>
       <!-- 返回顶部按钮结束 -->
     </div>
   </div>
 </template>
 <script>
 // import wxParse from "mpvue-wxparse";
+import goHome from '@/components/goHome';
 let plugin = requirePlugin("wxparserPlugin");
 
 export default {
-  // components: {
-  //   wxParse
-  // },
+  components: {
+    goHome
+  },
   data() {
     return {
       thread_data: {
@@ -207,8 +202,6 @@ export default {
       page_size: 5,
       // 是否是新读者（增加浏览量）
       new_reader: 0,
-      // 是否显示返回顶部按钮
-      scroll_show: false,
       // 是否没有新数据
       isBottom: false,
       // app二维码链接
@@ -246,17 +239,10 @@ export default {
         .then(resp => {
           if (resp.data.err_code == 0) {
             // 请求数据成功
-            // that.articleList = {};
+            
             that.articleList = resp.data.data.post_list;
-            // that.thread_data = {
-            //   un_image_attach: 0,
-            //   price: 0
-            // };
             that.thread_data = resp.data.data.thread_data;
             that.new_reader = 0;
-            // that.$set(that.articleList, resp.data.data.post_list);
-            // that.$set(that.thread_data, resp.data.data.thread_data);
-            // that.$set(that.new_reader, 0);
             that.$forceUpdate();
           }
         })
@@ -269,25 +255,6 @@ export default {
      */
     toIndex() {
       wx.switchTab({ url: "/pages/index/main" });
-    },
-    /**
-     * 返回顶部
-     */
-    scrollToTop() {
-      let that = this;
-      if (wx.pageScrollTo) {
-        wx.pageScrollTo({
-          scrollTop: 0,
-          duration: 600
-        });
-      } else {
-        wx.showModal({
-          title: "提示",
-          content:
-            "当前微信版本过低，无法使用该功能，请升级到最新微信版本后重试。"
-        });
-      }
-      that.scroll_show = false;
     }
   },
   /**
@@ -322,41 +289,19 @@ export default {
       // 没有帖子id参数, 返回首页
       wx.showModal({
         title: "提示", //提示的标题,
-        content: "没有该内容，请返回首页", //提示的内容,
+        content: "没有该内容,按确定返回", //提示的内容,
         showCancel: false, //是否显示取消按钮,
         confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
         confirmColor: "#3CC51F", //确定按钮的文字颜色,
         success: res => {
           if (res.confirm) {
             // console.log('用户点击确定')
-            wx.switchTab({ url: "/pages/index/main" });
+            wx.navigateBack({
+              delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+            });
           }
         }
       });
-    }
-  },
-  /**
-   * 生命周期函数
-   */
-  onHide() {
-    // let that = this;
-    // that.thread_data = {
-    //   un_image_attach: 0,
-    //   price: 0
-    // };
-    // that.articleList = {};
-  },
-  /**
-   * 监听页面滚动
-   * 判断是否显示返回顶部按钮
-   */
-  onPageScroll(e) {
-    let that = this;
-    // console.log(e);
-    if (e.scrollTop >= 600) {
-      that.scroll_show = true;
-    } else {
-      that.scroll_show = false;
     }
   },
   /**
@@ -729,23 +674,6 @@ export default {
   justify-content: center;
   align-items: center;
   color: #999;
-}
-
-.scroll-to-top {
-  z-index: 100;
-  position: fixed;
-  right: 20rpx;
-  bottom: 100rpx;
-  width: 120rpx;
-  height: 120rpx;
-}
-
-.scroll-to-top-img {
-  background-color: #1296db;
-  width: 90rpx;
-  height: 90rpx;
-  border-radius: 50%;
-  opacity: 0.9;
 }
 
 .extend-notice {

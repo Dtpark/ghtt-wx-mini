@@ -93,8 +93,7 @@ export default {
   methods: {
     // 滑动切换tab
     bindChange(e) {
-      var that = this;
-      // that.setData({ currentTab: e.detail.current });
+      let that = this;
       that.currentTab = e.mp.detail.current;
     },
     //点击tab切换
@@ -103,103 +102,169 @@ export default {
       if (that.currentTab === e.mp.target.dataset.current) {
         return false;
       } else {
-        //   that.setData({
-        //     currentTab: e.target.dataset.current
-        //   })
         that.currentTab = e.mp.target.dataset.current;
       }
+    },
+    /**
+     * 判断是否绑定一卡通系统
+     */
+    isBind() {
+      let that = this;
+      let bind;
+      let res = wx.getStorageSync("campuscardbind");
+      if (res == "bind") {
+        bind = true;
+      } else {
+        bind = false;
+      }
+      return bind;
+    },
+    /**
+     * 请求一卡通信息
+     */
+    async loadInfo() {
+      let that = this;
+      let res = {
+        errcode: null,
+        errmsg: ""
+      };
+      let session3rd = wx.getStorageSync("session3rd");
+      let data = {
+        session3rd: session3rd
+      };
+      await that.$wxAPI
+        .request(that.$url.expensesRecordUrl, data, "POST")
+        .then(success => {
+          res.errcode = success.data.errcode;
+          res.errmsg = success.data.errmsg;
+          if (res.errcode == 0) {
+            // 请求成功
+            that.user = success.data.data.user.data;
+            that.billsMore = success.data.data.billsMore.data;
+          }
+        });
+      return res;
     }
   },
-  onShow() {
+  /**
+   * 生命周期函数，监听页面加载
+   */
+  mounted() {
     let that = this;
-    wx.showLoading({
-      title: '加载中', //提示的内容,
-      mask: true, //显示透明蒙层，防止触摸穿透
+    // 获取设备信息
+    wx.getSystemInfo({
+      success: function(res) {
+        that.winWidth = res.windowWidth;
+        that.winHeight = res.windowHeight;
+      }
     });
-    that.$login
-      .isLogin()
-      .then(() => {
-        // 判断用户是否绑定一卡通系统
-        let campuscardbind = wx.getStorageSync("campuscardbind");
-        switch (campuscardbind) {
-          case "bind":
-            // 获取系统信息
-            wx.getSystemInfo({
-              success: function(res) {
-                // that.setData({
-                //   winWidth: res.windowWidth,
-                //   winHeight: res.windowHeight
-                // });
-                that.winWidth = res.windowWidth;
-                that.winHeight = res.windowHeight;
-                // console.log(res);
-              }
-            });
-            let session3rd = wx.getStorageSync("session3rd");
-            let data = {
-              session3rd: session3rd
-            };
-            that.$wxAPI
-              .request(that.$url.expensesRecordUrl, data, "POST")
-              .then(success => {
-                // console.log(success.data);
-                switch (success.data.errcode) {
-                  case 0:
-                    //   that.setData({
-                    //     user: success.data.data.user.data,
-                    //     billsMore: success.data.data.billsMore.data
-                    //   });
-                    that.user = success.data.data.user.data;
-                    that.billsMore = success.data.data.billsMore.data;
-                    wx.hideLoading();
-                    break;
-                  case 10:
-                    that.$login.doLogin();
-                    wx.hideLoading();
-                    break;
-                  default:
-                    wx.hideLoading();
-                    wx.showModal({
-                      title: "提示", //提示的标题,
-                      content: success.data.errmsg, //提示的内容,
-                      showCancel: false //是否显示取消按钮
-                    });
-                }
+  },
+  /**
+   * 生命周期函数——监听页面显示
+   */
+  async onShow() {
+    let that = this;
+    let loadRes;
+    let params;
+    wx.showLoading({
+      title: "加载中", //提示的内容,
+      mask: true //显示透明蒙层，防止触摸穿透
+    });
+    // 检查登录态
+    let user_status = await that.$login.isLogin();
+
+    // 检查一卡通系统绑定状态
+    let bind = that.isBind();
+
+    if (user_status == 0 && bind) {
+      // 已经登录 且 绑定了一卡通
+
+      // 开始请求信息
+      loadRes = await that.loadInfo();
+      switch (loadRes.errcode) {
+        case 0:
+          // 请求成功,不做任何操作
+          break;
+        case 10:
+          // 登录过期,弹窗提醒
+
+          params = {
+            title: "注意",
+            content: "登录过期，是否重新登录"
+          };
+          that.$wxAPI.showModal(params).then(res => {
+            if (res.confirm) {
+              // 用户点击确定
+              that.$login.doLogin().then(() => {
+                that.loadInfo();
               });
-            break;
-          case "unbind":
-            wx.hideLoading();
-            wx.showModal({
-              title: "提示", //提示的标题,
-              content: "您尚未绑定一卡通系统是否进行绑定？", //提示的内容,
-              showCancel: true, //是否显示取消按钮,
-              cancelText: "取消", //取消按钮的文字，默认为取消，最多 4 个字符,
-              cancelColor: "#000000", //取消按钮的文字颜色,
-              confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
-              confirmColor: "#3CC51F", //确定按钮的文字颜色,
-              success: res => {
-                if (res.confirm) {
-                  // console.log('用户点击确定')
-                  wx.navigateTo({ url: "/pages/campuscardsys/main" });
-                } else if (res.cancel) {
-                  // console.log('用户点击取消')
-                  wx.switchTab({ url: "/pages/index/main" });
-                }
-              }
-            });
-            break;
+            } else {
+              // 用户点击取消
+              wx.navigateBack({
+                delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+              });
+            }
+          });
+          break;
+        default:
+          // 发生其他错误,弹窗提醒
+          params = {
+            title: "注意",
+            content: loadRes.errmsg,
+            showCancel: false
+          };
+          that.$wxAPI.showModal(params).then(res => {
+            if (res.confirm) {
+              // 用户点击确认,返回上一页
+              wx.navigateBack({
+                delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+              });
+            }
+          });
+      }
+    } else if (user_status == 10) {
+      // 尚未登录，弹窗提醒
+      params = {
+        title: "提示",
+        content: "登录状态过期，是否重新登录"
+      };
+      that.$wxAPI.showModal(params).then(success => {
+        if (success.confirm) {
+          // 用户点击确定
+          that.$login.doLogin().then(() => {
+            that.loadInfo();
+          });
+        } else if (success.cancel) {
+          // 用户点击了取消
+          wx.navigateBack({
+            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+          });
         }
-      })
-      .catch(e => {
-        console.log(e);
       });
+    } else if (bind == false) {
+      // 未绑定一卡通系统，弹窗提醒
+      params = {
+        title: "提示", //提示的标题,
+        content: "您尚未绑定一卡通系统是否进行绑定？" //提示的内容,
+      };
+      that.$wxAPI.showModal(params).then(res => {
+        if (res.confirm) {
+          // console.log('用户点击确定')
+          wx.navigateTo({ url: "/pages/campuscardsys/main" });
+        } else if (res.cancel) {
+          // console.log('用户点击取消')
+          wx.navigateBack({
+            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+          });
+        }
+      });
+    }
+    wx.hideLoading();
   },
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
-
-  }
+  onShareAppMessage() {}
 };
 </script>
 <style scoped>

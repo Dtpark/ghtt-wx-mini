@@ -1,28 +1,39 @@
 <template>
   <div class="page">
-    <!-- <frames></frames> -->
-    <!-- <navigationBar
-      :title="videoTitle"
-      :navBackgroundColor="'pink'"
-      :titleColor="'green'"
-      :back-visible="true"
-      :home-path="'/pages/index/main'"
-    ></navigationBar>-->
     <!-- 周次选择开始 -->
-    <div class="applet_curriculum_week_select">
+    <!-- <div class="applet_curriculum_week_select">
       <picker @change="bindWeekChange" :value="week" :range="weeklist">
         <div class="applet_curriculum_picker">
           第{{ weeklist[week] }}周
             <text class="cuIcon-unfold text-black"></text>
         </div>
       </picker>
-    </div>
+    </div>-->
     <!-- 周次选择结束 -->
-
+    <!-- 头部开始 -->
+    <div class="bg-white solid-top solid-bottom">
+      <div class="flex align-center">
+        <div class="flex-sub"></div>
+        <div class="flex-sub">
+          <div class="applet_curriculum_week_select flex align-center">
+            <picker @change="bindWeekChange" :value="week" :range="weeklist">
+              <div class="applet_curriculum_picker">
+                第{{ weeklist[week] }}周
+                <text class="cuIcon-unfold text-black"></text>
+              </div>
+            </picker>
+          </div>
+        </div>
+        <div class="flex-sub padding-right applet_timetable_hd_right">
+          <span @click="add" class="cuIcon-add text-black lg"></span>
+        </div>
+      </div>
+    </div>
+    <!-- 头部结束 -->
     <!-- 课表开始 -->
     <div>
       <!-- 顶部星期条开始 -->
-      <div class="top">
+      <div class="top margin-top-sm">
         <div
           v-for="(item, index) in ['一','二','三','四','五','六','日']"
           :key="index"
@@ -32,7 +43,7 @@
       <!-- 顶部星期条结束 -->
 
       <!-- 课表滚动区域开始 -->
-      <scroll-view scroll-y="true" class="scroll" :style="{height:(winHeight*2-60-55)/2+'px'}">
+      <scroll-view scroll-y="true" class="scroll" :style="{height:(winHeight*2-90-56-20)/2+'px'}">
         <div :style="{height:currHeight*6+'px',width:'730rpx',display:'flex'}">
           <!-- 侧边节次号开始 -->
           <div class="sidebar">
@@ -47,7 +58,7 @@
           <!-- 按节次分割线开始 -->
           <div v-for="(item, index) in [1,2,3,4,5,6]" :key="index">
             <div
-              :style="{width:'750rpx',height:'1px', top: (index+1)*currHeight+'px', position: 'absolute', borderBottom: (index == 1 || index == 3)?('red solid 1px'):('lightgray solid 1px')}"
+              :style="{width:'650rpx',height:'1px', top: (index+1)*currHeight+'px', position: 'absolute', borderBottom: (index == 1 || index == 3)?('red solid 1px'):('lightgray solid 1px')}"
             ></div>
           </div>
           <!-- 按节次分割线结束 -->
@@ -56,9 +67,17 @@
           <div v-for="(item, index) in wlist" :key="index">
             <div
               class="flex-item kcb-item"
-              @click="showCarddiv"
+              @click="showCourseDetail"
+              :data-kch="item.kch"
+              :data-name="item.name"
+              :data-room="item.room"
+              :data-time="item.time"
+              :data-day="item.day"
+              :data-kcsx="item.kcsx"
+              :data-kslx="item.kslx"
+              :data-type="item.type"
               data-statu="open"
-              :style="{marginLeft:(item.day-1)*96+'rpx', marginTop: (item.time-1)*currHeight+5 +'px', height:currHeight-5+'px',backgroundColor:kch2color[item.kch]}"
+              :style="{marginLeft:(item.day-1)*96+'rpx', marginTop: (item.time-1)*currHeight+3 +'px', height:currHeight-5+'px',backgroundColor:kch2color[item.kch]}"
             >
               <div class="smalltext">{{ item.name }}@{{ item.room }}</div>
             </div>
@@ -69,6 +88,52 @@
       <!-- 课表滚动区域结束 -->
     </div>
     <!-- 课表结束 -->
+
+    <!-- 模态框——课程详情开始 -->
+    <div class="cu-modal" :class="{show:isShowModal}">
+      <div class="cu-dialog">
+        <div class="cu-bar bg-white justify-end">
+          <div class="content">课程信息</div>
+          <div class="action" @click="hideModal">
+            <text class="cuIcon-close text-red"></text>
+          </div>
+        </div>
+        <div class="padding-xl">
+          <div class="cu-form-group margin-top">
+            <div class="title">课程名称</div>
+            <div>{{ courseInfo.name }}</div>
+          </div>
+          <div class="cu-form-group">
+            <div class="title">上课时间</div>
+            <div>第{{ courseInfo.week }}周，星期{{ courseInfo.day }},第{{ courseInfo.time }}大节</div>
+          </div>
+          <div class="cu-form-group">
+            <div class="title">上课地点</div>
+            <div>{{ courseInfo.room }}</div>
+          </div>
+          <div class="cu-form-group">
+            <div class="title">类型</div>
+            <div>{{ courseInfo.kcsx }}</div>
+          </div>
+          <div class="cu-form-group">
+            <div class="title">考试类型</div>
+            <div>{{ courseInfo.kslx }}</div>
+          </div>
+        </div>
+        <div class="cu-bar bg-white justify-end">
+          <div class="action">
+            <button
+              class="cu-btn line-red text-red"
+              :style="{display:courseInfo.hideDel?'none':''}"
+              @click="del"
+              :data-kch="courseInfo.kch"
+            >删除</button>
+            <button class="cu-btn bg-green margin-left" @click="hideModal">确定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 模态框——课程详情结束 -->
     <!-- 未安排周次的课程开始 -->
     <!-- <div class="applet_lack_week_class">
       <p>未安排周次的课程</p>
@@ -154,51 +219,64 @@ export default {
       // 未安排周次的课程
       lack_of_week: null,
       // 本周
-      thisWeek: null
+      thisWeek: null,
+      // 模态框显示
+      isShowModal: false,
+      // 课程详情
+      courseInfo: {}
     };
   },
   methods: {
     /**
-     * 获取周次课表信息
+     * 判断是否绑定教务系统
      */
-    getWeekTimeTable(week = "", type = 0) {
+    isBind() {
       let that = this;
+      let bind;
+      let status = wx.getStorageSync("edubind");
+      switch (status) {
+        case "bind":
+          // 已经绑定教务系统
+          bind = true;
+          break;
+        case "unbind":
+          // 未绑定教务系统
+          bind = false;
+          break;
+      }
+      return bind;
+    },
+    /**
+     * 获取周次课表信息
+     * type = 0 为加载课表缓存， 为 1 为更新缓存
+     */
+    async getWeekTimeTable(week = "", type = 0) {
+      let that = this;
+      let res = {
+        errcode: null,
+        errmsg: null
+      };
       let session3rd = wx.getStorageSync("session3rd");
       let data = {
         session3rd: session3rd,
         type: type,
         week: week
       };
-      that.$wxAPI
+      await that.$wxAPI
         .request(that.$url.weekCurriculumUrl, data, "POST")
         .then(success => {
-          switch (success.data.errcode) {
-            case 0:
-              // that.setData({
-              //   wlist: success.data.wlist,
-              //   week: success.data.week,
-              //   thisWeek: success.data.today.week,
-              //   kch2color: success.data.kch2color,
-              //   lack_of_week: success.data.lack_of_week
-              // });
-              that.wlist = success.data.wlist;
-              that.week = success.data.week;
-              that.thisWeek = success.data.today.week;
-              that.kch2color = success.data.kch2color;
-              that.lack_of_week = success.data.lack_of_week;
-              break;
-            case 10:
-              // 登录过期，重新登录
-              that.$login.doLogin();
-              that.onShow();
-              break;
-            default:
-              wx.showModal({
-                title: "提示", //提示的标题,
-                content: success.data.errmsg //提示的内容
-              });
+          res.errcode = success.data.errcode;
+          res.errmsg = success.data.errmsg;
+          if (res.errcode == 0) {
+            // 获取成功
+            that.wlist = success.data.wlist;
+            that.week = success.data.week;
+            that.thisWeek = success.data.today.week;
+            that.kch2color = success.data.kch2color;
+            that.lack_of_week = success.data.lack_of_week;
           }
         });
+      return res;
     },
 
     /**
@@ -208,6 +286,110 @@ export default {
       // console.log(e.detail.value);
       let that = this;
       that.getWeekTimeTable(e.mp.detail.value);
+    },
+    /**
+     * 添加自定义课程
+     */
+    add() {
+      wx.navigateTo({ url: "/pages/curriculum/add/main" });
+    },
+    /**
+     * 显示课程详情
+     */
+    showCourseDetail(e) {
+      let that = this;
+      let kch = e.mp.currentTarget.dataset.kch;
+      let name = e.mp.currentTarget.dataset.name;
+      let room = e.mp.currentTarget.dataset.room;
+      let time = e.mp.currentTarget.dataset.time;
+      let day = e.mp.currentTarget.dataset.day;
+      let kcsx = e.mp.currentTarget.dataset.kcsx
+        ? e.mp.currentTarget.dataset.kcsx
+        : "未知";
+      let kslx = e.mp.currentTarget.dataset.kslx
+        ? e.mp.currentTarget.dataset.kslx
+        : "未知";
+      let hideDel = e.mp.currentTarget.dataset.type ? false : true;
+      let courseInfo = {
+        name: name,
+        week: that.week,
+        day: day,
+        time: time,
+        room: room,
+        kcsx: kcsx,
+        kslx: kslx,
+        kch: kch,
+        hideDel: hideDel
+      };
+      that.courseInfo = courseInfo;
+      that.isShowModal = true;
+    },
+    /**
+     * 删除自定义课程
+     */
+    del(e) {
+      let that = this;
+      wx.showModal({
+        title: "提示", //提示的标题,
+        content: "确定删除该自定义课程？", //提示的内容,
+        showCancel: true, //是否显示取消按钮,
+        cancelText: "取消", //取消按钮的文字，默认为取消，最多 4 个字符,
+        cancelColor: "#000000", //取消按钮的文字颜色,
+        confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
+        confirmColor: "#3CC51F", //确定按钮的文字颜色,
+        success: res => {
+          if (res.confirm) {
+            // console.log('用户点击确定')
+            let kch = e.mp.currentTarget.dataset.kch;
+            let session3rd = wx.getStorageSync("session3rd");
+            let data = {
+              session3rd: session3rd,
+              kch: kch
+            };
+            that.$wxAPI
+              .request(that.$url.delCurriculumUrl, data, "POST")
+              .then(success => {
+                if (success.data.errcode == 0) {
+                  wx.showToast({
+                    title: "删除成功", //提示的内容,
+                    icon: "success", //图标,
+                    duration: 2000, //延迟时间,
+                    mask: true, //显示透明蒙层，防止触摸穿透,
+                    success: res => {
+                      that.isShowModal = false;
+                      that.getWeekTimeTable(that.week);
+                    }
+                  });
+                } else {
+                  wx.showModal({
+                    title: "提示", //提示的标题,
+                    content: success.data.errmsg, //提示的内容,
+                    showCancel: false, //是否显示取消按钮,
+                    confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
+                    confirmColor: "#3CC51F", //确定按钮的文字颜色,
+                    success: res => {
+                      if (res.confirm) {
+                        // console.log('用户点击确定')
+                      }
+                    }
+                  });
+                }
+              })
+              .catch(e => {
+                console.log(e);
+              });
+          } else if (res.cancel) {
+            // console.log('用户点击取消')
+          }
+        }
+      });
+    },
+    /**
+     * 隐藏模态框
+     */
+    hideModal() {
+      let that = this;
+      that.isShowModal = false;
     }
   },
   /**
@@ -228,55 +410,149 @@ export default {
   /**
    * 生命周期函数--监听页面显示
    */
-  onShow() {
+  async onShow() {
     let that = this;
+    let user_status;
+    let bind;
+    let params;
     wx.showLoading({
       title: "加载中", //提示的内容,
       mask: true //显示透明蒙层，防止触摸穿透
     });
-    that.$login
-      .isLogin()
-      .then(res => {
-        // console.log(res);
-        // 判断是否绑定教务系统
-        let edubind = wx.getStorageSync("edubind");
-        switch (edubind) {
-          case "bind":
-            that.getWeekTimeTable();
-            break;
-          case "unbind":
-            wx.showModal({
-              title: "提示", //提示的标题,
-              content: "您尚未绑定教务系统是否进行绑定？", //提示的内容,
-              showCancel: true, //是否显示取消按钮,
-              cancelText: "取消", //取消按钮的文字，默认为取消，最多 4 个字符,
-              cancelColor: "#000000", //取消按钮的文字颜色,
-              confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
-              confirmColor: "#3CC51F", //确定按钮的文字颜色,
-              success: res => {
-                if (res.confirm) {
-                  // console.log('用户点击确定')
-                  wx.navigateTo({ url: "/pages/edusys/main" });
-                } else if (res.cancel) {
-                  // console.log('用户点击取消')
-                  wx.switchTab({ url: "/pages/index/main" });
-                }
-              }
+
+    // 判断是否登录
+    user_status = await that.$login.isLogin();
+
+    // 判断是否绑定教务系统
+    bind = that.isBind();
+
+    if (user_status == 0 && bind) {
+      // 用户已经登录 且 绑定了教务系统
+
+      // 获取课程信息
+      let res = await that.getWeekTimeTable();
+      if (res.errcode == 0) {
+        // 获取成功，不进行任何操作
+      } else if (res.errcode == 10) {
+        // 登录态过期，需要重新登录
+        // 弹窗提示
+        params = {
+          title: "注意",
+          content: "登录过期，是否重新登录"
+        };
+        that.$wxAPI.showModal(params).then(success => {
+          if (success.confirm) {
+            // 用户点击确定
+            that.$login.doLogin().then(() => {
+              that.getWeekTimeTable();
             });
-            break;
+          } else if (success.cancel) {
+            // 用户点击取消
+            wx.navigateBack({
+              delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+            });
+          }
+        });
+      } else {
+        // 其他错误
+        params = {
+          title: "注意",
+          content: res.errmsg,
+          showCancel: false
+        };
+        that.$wxAPI.showModal(params).then(success => {
+          if (success.confirm) {
+            // 用户点击确认,返回上一页
+            wx.navigateBack({
+              delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+            });
+          }
+        });
+      }
+    } else if (user_status == 10) {
+      // 用户未登录
+      // 弹窗提示
+      params = {
+        title: "注意",
+        content: "登录过期，是否重新登录"
+      };
+      that.$wxAPI.showModal(params).then(res => {
+        if (res.confirm) {
+          // 用户点击确定
+          that.$login.doLogin().then(() => {
+            that.getWeekTimeTable();
+          });
+        } else {
+          // 用户点击取消
+          wx.navigateBack({
+            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+          });
         }
-        wx.hideLoading();
-      })
-      .catch(e => {
-        console.log(e);
       });
+    } else if (bind == false) {
+      // 用户未绑定教务系统
+      params = {
+        title: "提示", //提示的标题,
+        content: "您尚未绑定教务系统是否进行绑定？" //提示的内容,
+      };
+      that.$wxAPI.showModal(params).then(res => {
+        if (res.confirm) {
+          // console.log('用户点击确定')
+          wx.navigateTo({ url: "/pages/edudsys/main" });
+        } else if (res.cancel) {
+          // console.log('用户点击取消')
+          wx.navigateBack({
+            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+          });
+        }
+      });
+    }
+
+    wx.hideLoading();
   },
   /**
    * 下拉刷新
    */
-  onPullDownRefresh() {
+  async onPullDownRefresh() {
     let that = this;
-    that.getWeekTimeTable(that.week, 1);
+    let params;
+    let res = await that.getWeekTimeTable(that.week, 1);
+    console.log(res);
+    if (res.errcode == 0) {
+      // 获取成功，弹窗显示成功
+      wx.showToast({
+        title: "更新成功", //提示的内容,
+        icon: "success", //图标,
+        duration: 2000, //延迟时间,
+        mask: true //显示透明蒙层，防止触摸穿透
+      });
+    } else if (res.errcode == 10) {
+      // 登录过期，重新登录
+      params = {
+        title: "注意",
+        content: "登录过期，是否重新登录"
+      };
+      that.$wxAPI.showModal(params).then(success => {
+        if (success.confirm) {
+          // 用户点击确定
+          that.$login.doLogin().then(() => {
+            that.getWeekTimeTable();
+          });
+          // that.getWeekTimeTable();
+        } else if (success.cancel) {
+          // 用户点击取消
+        }
+      });
+    } else {
+      // 其他错误
+      console.log("其他错误");
+      params = {
+        title: "注意",
+        content: res.errmsg,
+        showCancel: false
+      };
+      that.$wxAPI.showModal(params);
+    }
     wx.stopPullDownRefresh();
   },
 
@@ -290,26 +566,40 @@ export default {
 page {
   background: white;
 }
+.page {
+  width: 100%;
+}
+/* 头部样式开始 */
+.applet_timetable_hd_right {
+  text-align: right;
+  font-size: 50rpx;
+  font-weight: 600;
+}
+/* 头部样式结束 */
+
 /* 周次选择器样式开始 */
 .applet_curriculum_week_select {
-  margin: 10rpx auto;
-  width: 200rpx;
-  height: 60rpx;
+  /* margin: 10rpx auto; */
+  /* width: 200rpx; */
+  width: 100%;
+  height: 90rpx;
   overflow: hidden;
   background: white;
-  border: black solid 1px;
-  border-radius: 10rpx;
+  /* border: black solid 1px; */
+  /* border-radius: 10rpx; */
+  text-align: center;
+  /* display: inline-block; */
 }
 .applet_curriculum_week_select > picker {
   width: 100%;
-  height: 50rpx;
+  /* height: 100rpx; */
 }
 .applet_curriculum_picker {
   width: 100%;
   height: auto;
   text-align: center;
-  font-size: 32rpx;
-  /* display: inline-block; */
+  font-size: 34rpx;
+  display: inline-block;
 }
 /* 周次选择器样式结束 */
 

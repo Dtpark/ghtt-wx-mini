@@ -10,8 +10,8 @@
               <div class="forum_note">主题：{{forum_data.threads}} 帖子：{{forum_data.posts}}</div>
             </div>
             <div class="top_subject" v-if="has_top">
-              <div class="zan-tag zan-tag--primary">置顶贴</div>
-              <!-- <div class="cu-tag bg-gh">置顶贴</div> -->
+              <!-- <div class="zan-tag zan-tag--primary">置顶贴</div> -->
+              <div class="cu-tag bg-gh margin-top-sm">置顶贴</div>
               <div
                 @click="toDetail"
                 class="zan-ellipsis"
@@ -82,9 +82,9 @@
                 <!-- 卡片底部开始 -->
                 <div class="article-ext-info">
                   <div class="article-re">
-                    <text class="cuIcon-attention text-blue"></text>
+                    <text class="cuIcon-attention margin-right-xs text-gh"></text>
                     <div>{{article.views}}</div>
-                    <text class="cuIcon-message text-blue"></text>
+                    <text class="cuIcon-message margin-right-xs text-gh"></text>
                     <div>{{article.replies}}</div>
                   </div>
                   <div class="article-post-time">{{article.create_time}}</div>
@@ -95,28 +95,21 @@
             <!-- 帖子列表结束 -->
           </div>
         </div>
-        <div class="weui-loadmore">
-            <div class="weui-loading"></div>
-            <div class="weui-loadmore__tips">正在加载</div>
-        </div>
-        <!-- <template is="zan-loadmore" data="{{loading:have_data}}"></template>
-        <template is="zan-loadmore" data="{{nodata:no_data}}"></template>
-        <template is="zan-loadmore" data="{{nomore:nomore_data}}"></template>-->
-        <div @click="goHome" class="edit-cell">
-          <img class="edit-cell-img" src="/static/images/home.png">
-        </div>
-        <div @click="scrollToTop" class="scroll-to-top" v-if="scroll_show">
-          <img class="scroll-to-top-img" src="/static/images/top.png">
-        </div>
+         <div class="cu-load line-black" :class="isLoad? 'loading': 'over'"></div>
+        <goHome ></goHome>
       </div>
     </div>
   </div>
 </template>
 <script>
+import goHome from "@/components/goHome";
 export default {
+  components: {
+    goHome
+  },
   data() {
     return {
-      fid: 207,
+      fid: null,
       forum_data: {},
       few_top_thread_data: {},
       top_thread_data: {},
@@ -129,11 +122,8 @@ export default {
       order_by_views: 0,
       has_top: 0,
       reload_index: 1,
-      no_data: !1,
-      have_data: !1,
-      nomore_data: !1,
-      lite_switch: false,
-      scroll_show: false
+      isLoad: false,
+      lite_switch: false
     };
   },
   methods: {
@@ -153,15 +143,11 @@ export default {
             if (success.data.data.forum_thread_data != "") {
               that.articleList = success.data.data.forum_thread_data;
               that.page_index = data.page_index;
-              that.no_data = false;
-              that.have_data = false;
-              that.nomore_data = false;
+              that.isLoad = true;
             } else {
               that.articleList = success.data.data.forum_thread_data;
               that.page_index = data.page_index;
-              that.no_data = true;
-              that.have_data = false;
-              that.nomore_data = false;
+              that.isLoad = false;
             }
           } else {
             // 接口获取数据失败
@@ -195,10 +181,10 @@ export default {
      * 跳转到帖子详情
      */
     toDetail(e) {
-      var pid = e.mp.currentTarget.dataset.pid;
+      // var pid = e.mp.currentTarget.dataset.pid;
       var tid = e.mp.currentTarget.dataset.tid;
       wx.navigateTo({
-        url: "/pages/forum/detail/main?pid=" + pid + "&tid=" + tid
+        url: "/pages/forum/detail/main?tid=" + tid
       });
     },
     /**
@@ -238,39 +224,14 @@ export default {
       that.digest = 1;
       that.order_by_views = 0;
       that.reloadIndex();
-    },
-    /**
-     * 返回首页
-     */
-    goHome(){
-        wx.switchTab({ url: '/pages/index/main' });
-    },
-    /**
-     * 返回顶部
-     */
-    scrollToTop() {
-      let that = this;
-      if (wx.pageScrollTo) {
-        wx.pageScrollTo({
-          scrollTop: 0,
-          duration: 600
-        });
-      } else {
-        wx.showModal({
-          title: "提示",
-          content:
-            "当前微信版本过低，无法使用该功能，请升级到最新微信版本后重试。"
-        });
-      }
-      that.scroll_show = false;
     }
   },
   async mounted() {
     let that = this;
     let options = that.$root.$mp.query;
     wx.showLoading({
-      title: '加载中', //提示的内容,
-      mask: true, //显示透明蒙层，防止触摸穿透
+      title: "加载中", //提示的内容,
+      mask: true //显示透明蒙层，防止触摸穿透
     });
     if (options.fid) {
       that.fid = options.fid;
@@ -282,14 +243,16 @@ export default {
       wx.hideLoading();
       wx.showModal({
         title: "提示", //提示的标题,
-        content: "没有该内容，请返回首页", //提示的内容,
+        content: "没有该内容，按确定返回", //提示的内容,
         showCancel: false, //是否显示取消按钮,
         confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
         confirmColor: "#3CC51F", //确定按钮的文字颜色,
         success: res => {
           if (res.confirm) {
             // console.log('用户点击确定')
-            wx.switchTab({ url: "/pages/index/main" });
+            wx.navigateBack({
+              delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+            });
           }
         }
       });
@@ -313,7 +276,6 @@ export default {
       mask: true, //显示透明蒙层，防止触摸穿透,
       success: res => {}
     });
-    that.have_data = true;
     let data = {
       fid: that.fid,
       page_size: that.page_size,
@@ -342,17 +304,6 @@ export default {
   onPullDownRefresh() {
     this.reloadIndex();
     wx.stopPullDownRefresh();
-  },
-  /**
-   * 监听页面滚动--显示返回顶部按钮
-   */
-  onPageScroll(e) {
-    let that = this;
-    if (e.scrollTop >= 600) {
-      that.scroll_show = true;
-    } else {
-      that.scroll_show = false;
-    }
   }
 };
 </script>
@@ -362,7 +313,7 @@ export default {
   flex-direction: column;
   min-height: 100%;
   justify-content: space-between;
-  font-size: 28rpx;
+  font-size: 32rpx;
   padding: 0 20rpx;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -522,22 +473,6 @@ export default {
   margin-right: 20rpx;
 }
 
-.scroll-to-top {
-  z-index: 100;
-  position: fixed;
-  right: 50rpx;
-  bottom: 50rpx;
-  width: 90rpx;
-  height: 90rpx;
-}
-
-.scroll-to-top-img {
-  background-color: #1296db;
-  width: 90rpx;
-  height: 90rpx;
-  border-radius: 50%;
-  opacity: 0.9;
-}
 /* index结束 */
 
 .article-info .article-by {
@@ -560,7 +495,7 @@ export default {
 }
 
 .top_subject_item {
-  font-size: 26rpx;
+  font-size: 32rpx;
   color: #1296db;
 }
 
@@ -600,27 +535,17 @@ export default {
 .thread_order_border {
   border-bottom: 5rpx solid #1296db;
 }
-
-.edit-cell {
-  z-index: 100;
-  position: fixed;
-  right: 50rpx;
-  bottom: 170rpx;
-  width: 88rpx;
-  height: 88rpx;
-}
-
-.edit-cell-img {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 50%;
-  opacity: 0.8;
-}
 .detail-icon {
   width: 40rpx;
   height: 40rpx;
   margin-right: 15rpx;
 }
+
+.cu-tag{
+  font-size: 16px;
+  padding: 0 5px;
+}
+
 /* 友赞样式 */
 .zan-tag {
   display: inline-block;
@@ -629,7 +554,7 @@ export default {
   line-height: 16px;
   padding: 0 5px;
   border-radius: 2px;
-  font-size: 11px;
+  font-size: 16px;
   background: #1296db;
   text-align: center;
   color: #fff;

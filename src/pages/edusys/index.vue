@@ -3,74 +3,52 @@
     <!-- 解绑信息页面开始 -->
     <form class="page__bd page__bd_spacing" v-if="isBind" @submit="unbindEduSys">
       <div class="weui-cells__title">解绑教务系统</div>
-      <div class="weui-cells weui-cells_after-title">
-        <div class="weui-cell weui-cell_input">
-          <div class="weui-cell__hd">
-            <div class="weui-label">学号</div>
-          </div>
-          <div class="weui-cell__bd">
-            <input name="stuid" class="weui-input" disabled="true" :value="stuid" placeholder="学号">
-          </div>
-        </div>
-        <div class="weui-cell weui-cell_input">
-          <div class="weui-cell__hd">
-            <div class="weui-label">密码</div>
-          </div>
-          <div class="weui-cell__bd">
-            <input
-              name="pwd"
-              class="weui-input"
-              :password="isPassword"
-              :value="pwd"
-              disabled="true"
-              placeholder="密码"
-            >
-          </div>
-        </div>
-        <div class="weui-cell weui-cell_switch">
-          <div class="weui-cell__bd">显示密码</div>
-          <div class="weui-cell__ft">
-            <switch @change="switch_show_pwd"/>
-          </div>
-        </div>
+      <div class="cu-form-group">
+        <div class="title">学号</div>
+        <input name="stuid" disabled="true" :value="stuid" placeholder="学号" />
       </div>
-      <button class="weui-btn edubind" type="warn" form-type="submit">解绑</button>
+      <div class="cu-form-group">
+        <div class="title">密码</div>
+        <input name="pwd" :password="isPassword" :value="pwd" disabled="true" placeholder="密码" />
+      </div>
+      <div class="cu-form-group">
+        <div class="title">显示密码</div>
+        <switch @change="switch_show_pwd" />
+      </div>
+      <div class="padding flex flex-direction">
+        <button class="cu-btn bg-red lg" form-type="submit">解绑</button>
+      </div>
     </form>
     <!-- 解绑信息页面结束 -->
 
     <!-- 绑定信息页面开始 -->
     <form class="page__bd page__bd_spacing" v-else @submit="bindEduSys">
       <div class="weui-cells__title">绑定教务系统</div>
-      <div class="weui-cells weui-cells_after-title">
-        <div class="weui-cell weui-cell_input">
-          <div class="weui-cell__hd">
-            <div class="weui-label">学号</div>
-          </div>
-          <div class="weui-cell__bd">
-            <input name="stuid" class="weui-input" placeholder="请输入学号">
-          </div>
-        </div>
-        <div class="weui-cell weui-cell_input weui-cell_vcode">
-          <div class="weui-cell__hd">
-            <div class="weui-label">密码</div>
-          </div>
-          <div class="weui-cell__bd">
-            <input name="pwd" class="weui-input" type="password" placeholder="请输入密码">
-          </div>
-        </div>
+      <div class="cu-form-group">
+        <div class="title">学号</div>
+        <input name="stuid" placeholder="请输入学号" />
       </div>
-      <div class="weui-cells__tips">提示:以上密码为选课系统密码，初始值为"1234"。若忘记密码，可以联系所在院系教学秘书进行重置。</div>
-      <button class="weui-btn edubind" type="primary" form-type="submit">绑定</button>
-      <button class="weui-btn edubind" type="default" form-type="reset">重置</button>
+      <div class="cu-form-group">
+        <div class="title">密码</div>
+        <input name="pwd" type="password" placeholder="请输入密码" />
+      </div>
+      <div class="padding flex flex-direction">
+        <button class="cu-btn bg-green lg" form-type="submit">绑定</button>
+        <button class="cu-btn bg-white margin-top-sm lg" form-type="reset">重置</button>
+      </div>
+      <div class="tips">
+        <p>提示:</p>
+        <p>以上密码为选课系统密码，初始值为"1234"。若忘记密码，可以联系所在院系教学秘书进行重置。</p>
+      </div>
     </form>
     <!-- 绑定信息页面结束 -->
-    <goHome ></goHome>
+    <goHome></goHome>
   </div>
 </template>
 <script>
-import goHome from '@/components/goHome';
+import goHome from "@/components/goHome";
 export default {
-  components:{
+  components: {
     goHome
   },
   data() {
@@ -84,9 +62,66 @@ export default {
 
   methods: {
     /**
+     * 判断是否绑定教务系统
+     */
+    checkBind() {
+      let that = this;
+      let bind;
+      let status;
+      status = wx.getStorageSync("edubind");
+      switch (status) {
+        case "bind":
+          // 已经绑定教务系统
+          bind = true;
+          if (that.isBind == false) {
+            that.isBind = true;
+          }
+          break;
+        case "unbind":
+          // 尚未绑定教务系的
+          bind = false;
+          if (that.isBind == true) {
+            that.isBind = false;
+          }
+          break;
+        default:
+          // 尚未登录
+          bind = false;
+      }
+      return bind;
+    },
+    /**
+     * 获取学号和密码
+     */
+    async getInfo() {
+      let that = this;
+      let res = {
+        errcode: 0,
+        errmsg: null
+      };
+      if (that.stuid == null || that.pwd == null) {
+        // 从服务器请求学号密码信息
+        let data = {
+          session3rd: wx.getStorageSync("session3rd")
+        };
+        await that.$wxAPI
+          .request(that.$url.showInfoUrl, data, "POST")
+          .then(successRes => {
+            // 接口调用成功
+            res.errcode = successRes.data.errcode;
+            res.errmsg = successRes.data.errmsg;
+            if (successRes.data.errcode == 0) {
+              that.stuid = successRes.data.stuid;
+              that.pwd = successRes.data.pwd;
+            }
+          });
+      }
+      return res;
+    },
+    /**
      * 绑定教务系统
      */
-    bindEduSys: function(e) {
+    bindEduSys(e) {
       let that = this;
       // console.log(e.detail.value);
       // 前台校验数据（提交的数据是否为空）
@@ -131,11 +166,6 @@ export default {
                     mask: true //显示透明蒙层，防止触摸穿透
                   });
                   wx.setStorageSync("edubind", "bind");
-                  //   that.setData({
-                  //     isBind: true,
-                  //     stuid: e.detail.value.stuid,
-                  //     pwd: e.detail.value.pwd
-                  //   });
                   that.isBind = true;
                   that.stuid = e.mp.detail.value.stuid;
                   that.pwd = e.mp.detail.value.pwd;
@@ -213,9 +243,6 @@ export default {
                     duration: 2000, //延迟时间,
                     mask: true //显示透明蒙层，防止触摸穿透
                   });
-                  //   that.setData({
-                  //     isBind: false
-                  //   });
                   that.isBind = false;
                 } else if (successRes.data.errcode == 1) {
                   // 解绑失败
@@ -273,62 +300,76 @@ export default {
   /**
    * 生命周期函数--监听页面显示
    */
-  onShow() {
+  async onShow() {
     let that = this;
+    let user_status;
+    let bind;
+    let loadRes;
+    let params;
     wx.showLoading({
       title: "加载中", //提示的内容,
       mask: true //显示透明蒙层，防止触摸穿透
     });
-    // 1.获取 storage 中教务系统绑定信息
-    let eduBind = wx.getStorageSync("edubind");
-    if (eduBind) {
-      switch (eduBind) {
-        case "unbind":
-          if (that.isBind == true) {
-            that.isBind = false;
-          }
-          break;
-        case "bind":
-          // 将页面显示为解绑页面
-          if (that.isBind == false) {
-            that.isBind = true;
-          }
-          // 从服务器请求学号密码信息
-          let data = {
-            session3rd: wx.getStorageSync("session3rd")
+
+    // 1. 检查用户登录态
+    user_status = await that.$login.isLogin();
+
+    if (user_status == 0) {
+      // 用户已经登录
+
+      // 2. 判断是否绑定教务系统
+      bind =  that.checkBind();
+      if (bind) {
+        // 已经绑定了教务系统
+
+        // 加载学号密码信息
+        loadRes = await that.getInfo();
+        if (loadRes.errcode == 0) {
+          // 加载成功，啥也不干
+        } else if (loadRes.errcode == 10) {
+          // 登录过期，重新登录
+          params = {
+            title: "注意",
+            content: "登录过期，是否重新登录"
           };
-          that.$wxAPI
-            .request(that.$url.showInfoUrl, data, "POST")
-            .then(successRes => {
-              // 接口调用成功
-              wx.hideLoading();
-              if (successRes.data.errcode == 0) {
-                // that.setData({
-                //   stuid: successRes.data.stuid,
-                //   pwd: successRes.data.pwd
-                // });
-                that.stuid = successRes.data.stuid;
-                that.pwd = successRes.data.pwd;
-              } else if (successRes.data.errcode == 10) {
-                // 登录态过期,重新登录
-                that.$login.doLogin();
-              }
-            })
-            .catch(e => {
-              console.log(e);
-            });
-          // wx.hideLoading();
-          break;
+          that.$wxAPI.showModal(params).then(res => {
+            if (res.confirm) {
+              // 用户点击确定
+              that.$login.doLogin().then(() => {
+                that.getInfo();
+              });
+            } else {
+              // 用户点击取消
+              wx.navigateBack({
+                delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+              });
+            }
+          });
+        }
       }
-    } else {
-      that.$login
-        .doLogin()
-        .then(res => {
-          // that.onLoad();
-        })
-        .catch(e => {
-          console.log(e);
-        });
+    } else if (user_status == 10) {
+      // 登录过期
+      params = {
+        title: "注意",
+        content: "登录过期，是否重新登录"
+      };
+      that.$wxAPI.showModal(params).then(res => {
+        if (res.confirm) {
+          // 用户点击确定
+          that.$login.doLogin().then(() => {
+            bind = that.checkBind();
+            if(bind){
+              // 获取学号信息（刚登录，没必要再考虑登录失效的问题）
+              that.getInfo();
+            }
+          });
+        } else {
+          // 用户点击取消
+          wx.navigateBack({
+            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+          });
+        }
+      });
     }
     wx.hideLoading();
   },
@@ -336,15 +377,10 @@ export default {
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
-
-  }
+  onShareAppMessage: function() {}
 };
 </script>
 <style scoped>
-.edubind {
-  margin: 20rpx 30rpx;
-}
 </style>
 
 

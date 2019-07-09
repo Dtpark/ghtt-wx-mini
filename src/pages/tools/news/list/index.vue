@@ -41,7 +41,7 @@
     <div class="applet_page_select flex justify-center">
       <div class="flex bg-white padding-sm margin radius">
         <div @click="lastPage" class="applet_lastpage margin-right">
-          <text class="cuIcon-back" :class="page_index == 1 ? 'text-gray' : 'text-black'"></text>
+          <p class="cuIcon-back" :class="page_index == 1 ? 'text-gray' : 'text-black'">上一页</p>
         </div>
         <div class="applet_currpage">
           <picker
@@ -51,7 +51,8 @@
           >第{{ pageList[page_index-1] }}/{{ all_pages }}页</picker>
         </div>
         <div @click="nextPage" class="applet_next_page margin-left">
-          <text class="cuIcon-right" :class="page_index == all_pages ? 'text-gray' : 'text-black'"></text>
+          <span>下一页</span>
+          <span class="cuIcon-right" :class="page_index == all_pages ? 'text-gray' : 'text-black'"></span>
         </div>
       </div>
     </div>
@@ -139,6 +140,7 @@ export default {
             parseInt(success.data.page.all_pages)
           );
           that.per_page = success.data.page.per_page;
+          // that.scrollLeft = (column - 1023) * 60;
           // 返回顶部
           wx.pageScrollTo({
             scrollTop: 0,
@@ -235,7 +237,7 @@ export default {
    */
   onPullDownRefresh() {
     let that = this;
-    that.LoadNewsList(that.TabCur,that.page_index);
+    that.LoadNewsList(that.TabCur, that.page_index);
   },
   /**
    * 用户点击右上角分享
@@ -252,6 +254,10 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.applet_page_select {
+  /* font-size: 32rpx; */
 }
 </style>
 

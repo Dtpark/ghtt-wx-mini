@@ -55,6 +55,25 @@ export default {
 page{
   background: #efefef;
 }
+.weui-cells__title {
+  margin-top: 0.77em;
+  margin-bottom: 0.3em;
+  padding-left: 15px;
+  padding-right: 15px;
+  color: #999;
+  font-size: 14px;
+}
+
+.tips {
+  margin: 20rpx 30rpx;
+  width: 690rpx;
+  height: auto;
+  padding: 10px 15px;
+  border-radius: 10px;
+  background: rgba(217, 237, 247, 1);
+  color: rgb(49, 131, 185);
+  font-size: 12px;
+}
 
 /* 隐藏滚动条 */
 ::-webkit-scrollbar {

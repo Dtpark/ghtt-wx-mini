@@ -22,8 +22,14 @@
                       <div class="article-title">{{article.subject}}</div>
                     </div>
                     <div class="article-info">
-                      <div class="article-by">by</div>
-                      <div class="article-author">{{article.author}}</div>
+                      <div class="applet_article_author">
+                        <span class="article-by">by</span>
+                        <span class="article-author">{{article.author}}</span>
+                      </div>
+                      <div class="applet_article_fid flex justify-end">
+                        <span class="article-in">in</span>
+                        <span class="article-fid-item">{{article.fid_name}}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -41,9 +47,9 @@
                 <!-- 卡片底部开始 -->
                 <div class="article-ext-info">
                   <div class="article-re">
-                    <text class="cuIcon-attention text-blue"></text>
+                    <text class="cuIcon-attention margin-right-xs text-gh"></text>
                     <div>{{article.views}}</div>
-                    <text class="cuIcon-message text-blue"></text>
+                    <text class="cuIcon-message margin-right-xs text-gh"></text>
                     <div>{{article.replies}}</div>
                   </div>
                   <div class="article-post-time">{{article.create_time}}</div>
@@ -54,37 +60,25 @@
             <!-- 帖子列表结束 -->
           </div>
         </div>
-        <div class="weui-loadmore">
-          <div class="weui-loading"></div>
-          <div class="weui-loadmore__tips">正在加载</div>
-        </div>
-        <!-- <template is="zan-loadmore" data="{{loading:have_data}}"></template>
-        <template is="zan-loadmore" data="{{nodata:no_data}}"></template>
-        <template is="zan-loadmore" data="{{nomore:nomore_data}}"></template>-->
-        <div @click="goHome" class="edit-cell">
-          <img class="edit-cell-img" src="/static/images/home.png">
-        </div>
-        <div @click="scrollToTop" class="scroll-to-top" v-if="scroll_show">
-          <img class="scroll-to-top-img" src="/static/images/top.png">
-        </div>
+        <div class="cu-load line-black" :class="isLoad? 'loading': 'over'"></div>
+        <goHome></goHome>
       </div>
     </div>
   </div>
 </template>
 <script>
+import goHome from "@/components/goHome";
 export default {
+  components: {
+    goHome
+  },
   data() {
     return {
       articleList: {},
       // 页面主题条数
       page_size: 10,
       page_index: 0,
-      loading_hidden: true,
-      loading_msg: "加载中...",
-      scroll_show: false,
-      no_data: false,
-      have_data: false,
-      nomore_data: false,
+      isLoad: true,
       lite_switch: false
     };
   },
@@ -105,18 +99,15 @@ export default {
             if (success.data.data.forum_thread_data != "") {
               that.articleList = success.data.data.forum_thread_data;
               that.page_index = data.page_index;
-              that.no_data = false;
-              that.have_data = false;
-              that.nomore_data = false;
+              that.isLoad = true;
             } else {
               that.articleList = success.data.data.forum_thread_data;
               that.page_index = data.page_index;
-              that.no_data = true;
-              that.have_data = false;
-              that.nomore_data = false;
+              that.isLoad = false;
             }
           } else {
             // 接口获取数据失败
+            that.isLoad = false;
           }
         })
         .catch(e => {
@@ -127,36 +118,11 @@ export default {
      * 跳转到帖子详情
      */
     toDetail(e) {
-      var pid = e.mp.currentTarget.dataset.pid;
+      // var pid = e.mp.currentTarget.dataset.pid;
       var tid = e.mp.currentTarget.dataset.tid;
       wx.navigateTo({
-        url: "/pages/forum/detail/main?pid=" + pid + "&tid=" + tid
+        url: "/pages/forum/detail/main?tid=" + tid
       });
-    },
-    /**
-     * 返回首页
-     */
-    goHome() {
-      wx.switchTab({ url: "/pages/index/main" });
-    },
-    /**
-     * 返回顶部
-     */
-    scrollToTop() {
-      let that = this;
-      if (wx.pageScrollTo) {
-        wx.pageScrollTo({
-          scrollTop: 0,
-          duration: 600
-        });
-      } else {
-        wx.showModal({
-          title: "提示",
-          content:
-            "当前微信版本过低，无法使用该功能，请升级到最新微信版本后重试。"
-        });
-      }
-      that.scroll_show = false;
     }
   },
   /**
@@ -181,7 +147,6 @@ export default {
       mask: true, //显示透明蒙层，防止触摸穿透,
       success: res => {}
     });
-    that.have_data = true;
     let data = {
       page_size: that.page_size,
       page_index: that.page_index + 1
@@ -209,21 +174,14 @@ export default {
     wx.stopPullDownRefresh();
   },
   /**
-   * 监听页面滚动--显示返回顶部按钮
+   * 用户点击右上角分享
    */
-  onPageScroll(e) {
-    let that = this;
-    if (e.scrollTop >= 600) {
-      that.scroll_show = true;
-    } else {
-      that.scroll_show = false;
-    }
-  }
+  onShareAppMessage: function() {}
 };
 </script>
 <style>
-.container{
-    padding: 10rpx 0;
+.container {
+  padding: 20rpx 20rpx;
 }
 
 .article {
@@ -286,9 +244,14 @@ export default {
 }
 
 .article-info {
-  display: flex;
+  width: 100%;
+  display: inline-block;
   flex-flow: row nowrap;
   align-items: center;
+}
+.applet_article_author {
+  width: 50%;
+  display: inline-block;
 }
 
 .article-info .article-by {
@@ -304,6 +267,12 @@ export default {
 .article-info .article-fid-item {
   font-size: 26rpx;
   color: #1296db;
+}
+
+.applet_article_fid {
+  width: 50%;
+  text-align: right;
+  display: inline-block;
 }
 
 .article-info .article-in {
@@ -368,39 +337,6 @@ export default {
 
 .article-ext-info .article-re view {
   margin-right: 20rpx;
-}
-
-.scroll-to-top {
-  z-index: 100;
-  position: fixed;
-  right: 50rpx;
-  bottom: 50rpx;
-  width: 90rpx;
-  height: 90rpx;
-}
-
-.scroll-to-top-img {
-  background-color: #1296db;
-  width: 90rpx;
-  height: 90rpx;
-  border-radius: 50%;
-  opacity: 0.9;
-}
-
-.edit-cell {
-  z-index: 100;
-  position: fixed;
-  right: 50rpx;
-  bottom: 170rpx;
-  width: 88rpx;
-  height: 88rpx;
-}
-
-.edit-cell-img {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 50%;
-  opacity: 0.8;
 }
 </style>
 

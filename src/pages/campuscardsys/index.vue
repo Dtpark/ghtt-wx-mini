@@ -3,81 +3,56 @@
     <!-- 解绑信息页面开始 -->
     <form class="page__bd page__bd_spacing" v-if="isBind" @submit="unbindCmpusCard">
       <div class="weui-cells__title">解绑一卡通系统</div>
-      <div class="weui-cells weui-cells_after-title">
-        <div class="weui-cell weui-cell_input">
-          <div class="weui-cell__hd">
-            <div class="weui-label">账号</div>
-          </div>
-          <div class="weui-cell__bd">
-            <input name="stuid" class="weui-input" disabled="true" :value="stuid" placeholder="学号">
-          </div>
-        </div>
-        <div class="weui-cell weui-cell_input">
-          <div class="weui-cell__hd">
-            <div class="weui-label">密码</div>
-          </div>
-          <div class="weui-cell__bd">
-            <input
-              name="pwd"
-              class="weui-input"
-              :password="isPassword"
-              :value="pwd"
-              disabled="true"
-              placeholder="密码"
-            >
-          </div>
-        </div>
-        <div class="weui-cell weui-cell_switch">
-          <div class="weui-cell__bd">显示密码</div>
-          <div class="weui-cell__ft">
-            <switch @change="switch_show_pwd"/>
-          </div>
-        </div>
+
+      <div class="cu-form-group">
+        <div class="title">账号</div>
+        <input name="stuid" disabled="true" :value="stuid" placeholder="学号" />
       </div>
-      <button class="weui-btn edubind" type="warn" form-type="submit">解绑</button>
+      <div class="cu-form-group">
+        <div class="title">密码</div>
+        <input name="pwd" :password="isPassword" :value="pwd" disabled="true" placeholder="密码" />
+      </div>
+      <div class="cu-form-group">
+        <div class="title">显示密码</div>
+        <switch @change="switch_show_pwd" />
+      </div>
+      <div class="padding flex flex-direction">
+        <button class="cu-btn bg-red lg" form-type="submit">解绑</button>
+      </div>
     </form>
     <!-- 解绑信息页面结束 -->
 
     <!-- 绑定信息页面开始 -->
     <form class="page__bd page__bd_spacing" v-else @submit="bindCampuscard">
       <div class="weui-cells__title">绑定校园一卡通</div>
-      <div class="weui-cells weui-cells_after-title">
-        <div class="weui-cell weui-cell_input">
-          <div class="weui-cell__hd">
-            <div class="weui-label">卡号</div>
-          </div>
-          <div class="weui-cell__bd">
-            <input name="stuid" class="weui-input" placeholder="请输入卡号">
-          </div>
-        </div>
-        <div class="weui-cell weui-cell_input weui-cell_vcode">
-          <div class="weui-cell__hd">
-            <div class="weui-label">密码</div>
-          </div>
-          <div class="weui-cell__bd">
-            <input name="pwd" class="weui-input" type="password" placeholder="请输入密码">
-          </div>
-        </div>
+      <div class="cu-form-group">
+        <div class="title">账号</div>
+        <input name="stuid" placeholder="请输入卡号" />
+      </div>
+      <div class="cu-form-group">
+        <div class="title">密码</div>
+        <input name="pwd" type="password" placeholder="请输入密码" />
+      </div>
+      <div class="padding flex flex-direction">
+        <button class="cu-btn bg-green lg" form-type="submit">绑定</button>
+        <button class="cu-btn line-black margin-top-sm lg" form-type="reset">重置</button>
       </div>
       <div class="tips">
         <p>提示</p>
         <p>1.以上密码为一卡通查询密码，初始为身份证号后六位；若身份证号含有“X”，则为去掉“X”后的后六位；</p>
         <p>2.为了保护账号安全，绑定成功后，无法变更姓名，请绑定自己账号，切勿绑定他人账号。</p>
       </div>
-      <button class="weui-btn edubind" type="primary" form-type="submit">绑定</button>
-      <button class="weui-btn edubind" type="default" form-type="reset">重置</button>
     </form>
     <!-- 绑定信息页面结束 -->
 
     <!-- 引入返回首页的组件 -->
-    <goHome ></goHome>
-
+    <goHome></goHome>
   </div>
 </template>
 <script>
-import goHome from'@/components/goHome';
+import goHome from "@/components/goHome";
 export default {
-  components:{
+  components: {
     goHome
   },
   data() {
@@ -89,6 +64,63 @@ export default {
     };
   },
   methods: {
+    /**
+     * 判断是否绑定一卡通系统
+     */
+    checkBind() {
+      let that = this;
+      let bind;
+      let status;
+      status = wx.getStorageSync("campuscardbind");
+      switch (status) {
+        case "bind":
+          // 已经绑定一卡通系统
+          bind = true;
+          if (that.isBind == false) {
+            that.isBind = true;
+          }
+          break;
+        case "unbind":
+          // 尚未绑定教务系的
+          bind = false;
+          if (that.isBind == true) {
+            that.isBind = false;
+          }
+          break;
+        default:
+          // 尚未登录
+          bind = false;
+      }
+      return bind;
+    },
+    /**
+     * 获取学号和密码
+     */
+    async getInfo() {
+      let that = this;
+      let res = {
+        errcode: 0,
+        errmsg: null
+      };
+      if (that.stuid == null || that.pwd == null) {
+        // 从服务器请求学号密码信息
+        let data = {
+          session3rd: wx.getStorageSync("session3rd")
+        };
+        await that.$wxAPI
+          .request(that.$url.campuscardInfoUrl, data, "POST")
+          .then(successRes => {
+            // 接口调用成功
+            res.errcode = successRes.data.errcode;
+            res.errmsg = successRes.data.errmsg;
+            if (successRes.data.errcode == 0) {
+              that.stuid = successRes.data.stuid;
+              that.pwd = successRes.data.pwd;
+            }
+          });
+      }
+      return res;
+    },
     /**
      * 绑定一卡通系统
      */
@@ -283,86 +315,85 @@ export default {
   /**
    * 生命周期函数--监听页面显示
    */
-  onShow() {
+  async onShow() {
     let that = this;
+    let user_status;
+    let bind;
+    let loadRes;
+    let params;
     wx.showLoading({
       title: "加载中", //提示的内容,
       mask: true //显示透明蒙层，防止触摸穿透
     });
-    // 1.获取 storage 中一卡通系统绑定信息
-    let campuscardbind = wx.getStorageSync("campuscardbind");
-    if (campuscardbind) {
-      switch (campuscardbind) {
-        case "unbind":
-          if (that.isBind == true) {
-            that.isBind = false;
-          }
-          break;
-        case "bind":
-          // 将页面显示为解绑页面
-          if (that.isBind == false) {
-            that.isBind = true;
-          }
-          // 从服务器请求账号密码信息
-          let data = {
-            session3rd: wx.getStorageSync("session3rd")
+
+    // 1. 检查用户登录态
+    user_status = await that.$login.isLogin();
+
+    if (user_status == 0) {
+      // 用户已经登录
+
+      // 2. 判断是否绑定一卡通系统
+      bind = that.checkBind();
+      if (bind) {
+        // 已经绑定了一卡通系统
+
+        // 加载学号密码信息
+        loadRes = await that.getInfo();
+        if (loadRes.errcode == 0) {
+          // 加载成功，啥也不干
+        } else if (loadRes.errcode == 10) {
+          // 登录过期，重新登录
+          params = {
+            title: "注意",
+            content: "登录过期，是否重新登录"
           };
-          that.$wxAPI
-            .request(that.$url.campuscardInfoUrl, data, "POST")
-            .then(successRes => {
-              // 接口调用成功
-              wx.hideLoading();
-              if (successRes.data.errcode == 0) {
-                // that.setData({
-                //   'stuid': successRes.data.stuid,
-                //   'pwd': successRes.data.pwd
-                // });
-                that.stuid = successRes.data.stuid;
-                that.pwd = successRes.data.pwd;
-              } else if (successRes.data.errcode == 10) {
-                // 登录态过期,重新登录
-                that.$login.doLogin();
-              }
-            })
-            .catch(e => {
-              console.log(e);
-            });
-          wx.hideLoading();
-          break;
+          that.$wxAPI.showModal(params).then(res => {
+            if (res.confirm) {
+              // 用户点击确定
+              that.$login.doLogin().then(() => {
+                that.getInfo();
+              });
+            } else {
+              // 用户点击取消
+              wx.navigateBack({
+                delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+              });
+            }
+          });
+        }
       }
-    } else {
-      that.$login
-        .doLogin()
-        .then(res => {
-          // that.onLoad();
-        })
-        .catch(e => {
-          console.log(e);
-        });
+    } else if (user_status == 10) {
+      // 登录过期
+      params = {
+        title: "注意",
+        content: "登录过期，是否重新登录"
+      };
+      that.$wxAPI.showModal(params).then(res => {
+        if (res.confirm) {
+          // 用户点击确定
+          that.$login.doLogin().then(() => {
+            bind = that.checkBind();
+            if (bind) {
+              // 获取学号信息（刚登录，没必要再考虑登录失效的问题）
+              that.getInfo();
+            }
+          });
+        } else {
+          // 用户点击取消
+          wx.navigateBack({
+            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+          });
+        }
+      });
     }
     wx.hideLoading();
   },
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
-
-  }
+  onShareAppMessage() {}
 };
 </script>
 <style scoped>
-.edubind {
-  margin: 20rpx 30rpx;
-}
-.tips {
-  margin: 20rpx 30rpx;
-  width: 690rpx;
-  height: auto;
-  padding: 10px 15px;
-  border-radius: 10px;
-  background: rgba(217, 237, 247, 1);
-  color: rgb(49, 131, 185);
-  font-size: 12px;
-}
 </style>
 

@@ -5,7 +5,7 @@ import login from '@/utils/handleLogin';
 import wxAPI from '@/utils/wxAPI';
 import url from '@/utils/config';
 import index from '@/utils/index';
-import '../static/style/weui.min.css';
+// import '../static/style/weui.min.css';
 import '../static/style/main.css';
 import '../static/style/icon.css';
 

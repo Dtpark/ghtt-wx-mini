@@ -43,7 +43,7 @@ export default {
             if (
               that.lastPage == "/pages/index/main" ||
               that.lastPage == "/pages/tools/list/main" ||
-              that.lastPage == "/pages/setting/main"
+              that.lastPage == "/pages/me/main"
             ) {
               // 如果lastPage是tabbar页面则用wx.switchTab(Object object)跳转
               wx.switchTab({

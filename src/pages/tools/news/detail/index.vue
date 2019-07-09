@@ -11,7 +11,7 @@
       <!-- 分割线结束 -->
 
       <!-- 正文开始 -->
-      <div class="text-content">
+      <div class="text-content margin-bottom">
         <wxparser :rich-text="content"/>
       </div>
       <!-- 正文结束 -->
@@ -79,12 +79,7 @@ export default {
               }
               that.date = success.data.data.date;
               that.title = success.data.data.title;
-              that.content = success.data.data.content
-                .replace(/\/_upload\//g, "http://today.hitwh.edu.cn/_upload/")
-                .replace(
-                  /\/_ueditor\//g,
-                  "http://today.hitwh.edu.cn/_ueditor/"
-                ); //解决图片相对路径不解析的问题
+              that.content = success.data.data.content;
               that.views = success.data.data.view;
               wx.hideLoading();
               break;
@@ -92,14 +87,16 @@ export default {
               wx.hideLoading();
               wx.showModal({
                 title: "提示", //提示的标题,
-                content: success.data.errmsg, //提示的内容,
+                content: success.data.errmsg,
                 showCancel: false, //是否显示取消按钮,
                 confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
                 confirmColor: "#3CC51F", //确定按钮的文字颜色,
                 success: res => {
                   if (res.confirm) {
                     //   console.log('用户点击确定')
-                    wx.redirectTo({ url: "/pages/tools/news/list/main" });
+                    wx.navigateBack({
+                      delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+                    });
                   } else if (res.cancel) {
                     console.log("用户点击取消");
                   }
@@ -121,7 +118,9 @@ export default {
         success: res => {
           if (res.confirm) {
             //   console.log('用户点击确定')
-            wx.redirectTo({ url: "/pages/tools/news/list/main" });
+            wx.navigateBack({
+              delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+            });
           } else if (res.cancel) {
             console.log("用户点击取消");
           }
@@ -148,6 +147,15 @@ export default {
   border-bottom: #d8d8d8 solid 1rpx;
 }
 /* 分割线样式结束 */
+
+.wxparser--wxParser-inline {
+  word-wrap: break-word;
+  word-break: break-all;
+}
+.wxparser--wxParser-inline > text{
+  word-wrap: break-word;
+  word-break: break-all;
+}
 </style>
 
 
