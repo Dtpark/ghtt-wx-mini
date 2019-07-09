@@ -97,7 +97,7 @@ export default {
       let that = this;
       let res = {
         errcode: 0,
-        errmsg: null
+        errmsg: ""
       };
       if (that.stuid == null || that.pwd == null) {
         // 从服务器请求学号密码信息
@@ -109,7 +109,7 @@ export default {
           .then(successRes => {
             // 接口调用成功
             res.errcode = successRes.data.errcode;
-            res.errmsg = successRes.data.errmsg;
+            res.errmsg = successRes.data.errmsg + "";
             if (successRes.data.errcode == 0) {
               that.stuid = successRes.data.stuid;
               that.pwd = successRes.data.pwd;
@@ -318,7 +318,7 @@ export default {
       // 用户已经登录
 
       // 2. 判断是否绑定教务系统
-      bind =  that.checkBind();
+      bind = that.checkBind();
       if (bind) {
         // 已经绑定了教务系统
 
@@ -335,9 +335,7 @@ export default {
           that.$wxAPI.showModal(params).then(res => {
             if (res.confirm) {
               // 用户点击确定
-              that.$login.doLogin().then(() => {
-                that.getInfo();
-              });
+              that.$wxAPI.toLoginPage();
             } else {
               // 用户点击取消
               wx.navigateBack({
@@ -356,13 +354,7 @@ export default {
       that.$wxAPI.showModal(params).then(res => {
         if (res.confirm) {
           // 用户点击确定
-          that.$login.doLogin().then(() => {
-            bind = that.checkBind();
-            if(bind){
-              // 获取学号信息（刚登录，没必要再考虑登录失效的问题）
-              that.getInfo();
-            }
-          });
+          that.$wxAPI.toLoginPage();
         } else {
           // 用户点击取消
           wx.navigateBack({

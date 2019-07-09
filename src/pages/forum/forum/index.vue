@@ -10,8 +10,8 @@
               <div class="forum_note">主题：{{forum_data.threads}} 帖子：{{forum_data.posts}}</div>
             </div>
             <div class="top_subject" v-if="has_top">
-              <!-- <div class="zan-tag zan-tag--primary">置顶贴</div> -->
-              <div class="cu-tag bg-gh margin-top-sm">置顶贴</div>
+              <div class="zan-tag zan-tag--primary">置顶贴</div>
+              <!-- <div class="cu-tag bg-gh margin-top-sm">置顶贴</div> -->
               <div
                 @click="toDetail"
                 class="zan-ellipsis"
@@ -313,7 +313,7 @@ export default {
   flex-direction: column;
   min-height: 100%;
   justify-content: space-between;
-  font-size: 32rpx;
+  font-size: 28rpx;
   padding: 0 20rpx;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -495,7 +495,7 @@ export default {
 }
 
 .top_subject_item {
-  font-size: 32rpx;
+  font-size: 28rpx;
   color: #1296db;
 }
 
@@ -551,10 +551,10 @@ export default {
   display: inline-block;
   position: relative;
   box-sizing: border-box;
-  line-height: 16px;
+  line-height: 14px;
   padding: 0 5px;
   border-radius: 2px;
-  font-size: 16px;
+  font-size: 14px;
   background: #1296db;
   text-align: center;
   color: #fff;

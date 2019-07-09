@@ -136,7 +136,7 @@ export default {
         .request(that.$url.expensesRecordUrl, data, "POST")
         .then(success => {
           res.errcode = success.data.errcode;
-          res.errmsg = success.data.errmsg;
+          res.errmsg = success.data.errmsg + '';
           if (res.errcode == 0) {
             // 请求成功
             that.user = success.data.data.user.data;
@@ -195,9 +195,7 @@ export default {
           that.$wxAPI.showModal(params).then(res => {
             if (res.confirm) {
               // 用户点击确定
-              that.$login.doLogin().then(() => {
-                that.loadInfo();
-              });
+              that.$wxAPI.toLoginPage();
             } else {
               // 用户点击取消
               wx.navigateBack({
@@ -231,9 +229,7 @@ export default {
       that.$wxAPI.showModal(params).then(success => {
         if (success.confirm) {
           // 用户点击确定
-          that.$login.doLogin().then(() => {
-            that.loadInfo();
-          });
+          that.$wxAPI.toLoginPage();
         } else if (success.cancel) {
           // 用户点击了取消
           wx.navigateBack({

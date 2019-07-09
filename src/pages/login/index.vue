@@ -28,37 +28,54 @@ export default {
     };
   },
   methods: {
-    bindGetUserInfo(e) {
+    async bindGetUserInfo(e) {
       let that = this;
+      let res;
       if (e.mp.detail.userInfo) {
         // 点击Button弹窗授权，如果授权了，执行login
         // 因为Login流程中有wx.getUserInfo，此时就可以获取到了
-        that.$login
-          .doLogin()
-          .then(() => {
-            // 登录成功后，将用户信息存至全局后返回
-            let userInfoRes = JSON.parse(wx.getStorageSync("userInfoRes"));
-            //app.globalData.userInfo = userInfoRes.userInfo;
-
-            if (
-              that.lastPage == "/pages/index/main" ||
-              that.lastPage == "/pages/tools/list/main" ||
-              that.lastPage == "/pages/me/main"
-            ) {
-              // 如果lastPage是tabbar页面则用wx.switchTab(Object object)跳转
-              wx.switchTab({
-                url: that.lastPage
-              });
-            } else {
-              // 否则用wx.redirectTo(Object object)跳转
-              wx.redirectTo({
-                url: that.lastPage
-              });
-            }
-          })
-          .catch(err => {
-            console.log(err);
+        res = await that.$login.doLogin();
+        if(res.errcode == 0){
+          // 登录成功
+          wx.navigateBack({
+            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
           });
+        }else{
+          // 登录失败，请重试
+          wx.showToast({
+            title: res.errmsg+'请重试', //提示的内容,
+            icon: 'none', //图标,
+            duration: 2000, //延迟时间,
+            mask: true, //显示透明蒙层，防止触摸穿透,
+            success: res => {}
+          });
+        }
+        // that.$login
+        //   .doLogin()
+        //   .then(() => {
+        //     // 登录成功后，将用户信息存至全局后返回
+        //     // let userInfoRes = JSON.parse(wx.getStorageSync("userInfoRes"));
+        //     //app.globalData.userInfo = userInfoRes.userInfo;
+
+        //     // if (
+        //     //   that.lastPage == "/pages/index/main" ||
+        //     //   that.lastPage == "/pages/tools/list/main" ||
+        //     //   that.lastPage == "/pages/me/main"
+        //     // ) {
+        //     //   // 如果lastPage是tabbar页面则用wx.switchTab(Object object)跳转
+        //     //   wx.switchTab({
+        //     //     url: that.lastPage
+        //     //   });
+        //     // } else {
+        //     //   // 否则用wx.redirectTo(Object object)跳转
+        //     //   wx.redirectTo({
+        //     //     url: that.lastPage
+        //     //   });
+        //     // }
+        //   })
+          // .catch(err => {
+          //   console.log(err);
+          // });
       } else {
         // 用户点击拒绝，则弹窗提示
         wx.showModal({

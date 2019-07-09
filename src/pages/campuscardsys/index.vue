@@ -100,7 +100,7 @@ export default {
       let that = this;
       let res = {
         errcode: 0,
-        errmsg: null
+        errmsg: ""
       };
       if (that.stuid == null || that.pwd == null) {
         // 从服务器请求学号密码信息
@@ -112,7 +112,7 @@ export default {
           .then(successRes => {
             // 接口调用成功
             res.errcode = successRes.data.errcode;
-            res.errmsg = successRes.data.errmsg;
+            res.errmsg = successRes.data.errmsg + "";
             if (successRes.data.errcode == 0) {
               that.stuid = successRes.data.stuid;
               that.pwd = successRes.data.pwd;
@@ -126,7 +126,6 @@ export default {
      */
     bindCampuscard(e) {
       let that = this;
-      // console.log(e.detail.value);
       // 前台校验数据（提交的数据是否为空）
       if (e.mp.detail.value.stuid == "" || e.mp.detail.value.pwd == "") {
         // 数据不合法（为空），弹出提示框
@@ -168,11 +167,6 @@ export default {
                     mask: true //显示透明蒙层，防止触摸穿透
                   });
                   wx.setStorageSync("campuscardbind", "bind");
-                  //   that.setData({
-                  //     isBind: true,
-                  //     stuid: e.detail.value.stuid,
-                  //     pwd: e.detail.value.pwd
-                  //   });
                   that.isBind = true;
                   that.stuid = e.mp.detail.value.stuid;
                   that.pwd = e.mp.detail.value.pwd;
@@ -191,7 +185,7 @@ export default {
                     success: res => {
                       if (res.confirm) {
                         // 用户点击确定执行登录流程
-                        that.$login.doLogin();
+                        that.$wxAPI.toLoginPage();
                       }
                     }
                   });
@@ -256,9 +250,6 @@ export default {
                     duration: 2000, //延迟时间,
                     mask: true //显示透明蒙层，防止触摸穿透
                   });
-                  //   that.setData({
-                  //     isBind: false
-                  //   });
                   that.isBind = false;
                 } else if (successRes.data.errcode == 1) {
                   // 解绑失败
@@ -272,13 +263,14 @@ export default {
                   });
                 } else if (successRes.data.errcode == 10) {
                   // 登录过期重新登录
-                  that.$login
-                    .doLogin(e => {
-                      wx.hideLoading();
-                    })
-                    .catch(e => {
-                      console.log(e);
-                    });
+                  let params = {
+                    content: "登录过期，是否重新登录？"
+                  };
+                  that.$wxAPI.showModal(params).then(success => {
+                    if (success.confirm) {
+                      that.$wxAPI.toLoginPage();
+                    }
+                  });
                 }
               })
               .catch(e => {
@@ -350,9 +342,7 @@ export default {
           that.$wxAPI.showModal(params).then(res => {
             if (res.confirm) {
               // 用户点击确定
-              that.$login.doLogin().then(() => {
-                that.getInfo();
-              });
+              that.$wxAPI.toLoginPage();
             } else {
               // 用户点击取消
               wx.navigateBack({
@@ -371,13 +361,7 @@ export default {
       that.$wxAPI.showModal(params).then(res => {
         if (res.confirm) {
           // 用户点击确定
-          that.$login.doLogin().then(() => {
-            bind = that.checkBind();
-            if (bind) {
-              // 获取学号信息（刚登录，没必要再考虑登录失效的问题）
-              that.getInfo();
-            }
-          });
+          that.$wxAPI.toLoginPage();
         } else {
           // 用户点击取消
           wx.navigateBack({

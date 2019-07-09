@@ -11,8 +11,8 @@
       <!-- 分割线结束 -->
 
       <!-- 正文开始 -->
-      <div class="text-content margin-bottom">
-        <wxparser :rich-text="content"/>
+      <div class="text-content margin-tb">
+        <wxparser :rich-text="content" />
       </div>
       <!-- 正文结束 -->
       <!-- 返回首页开始 -->
@@ -148,13 +148,21 @@ export default {
 }
 /* 分割线样式结束 */
 
+.wxparser--wxParser-p {
+  overflow: hidden;
+  max-width: 100%;
+  white-space:pre-line;
+}
+
 .wxparser--wxParser-inline {
   word-wrap: break-word;
   word-break: break-all;
+  white-space: inherit;
 }
-.wxparser--wxParser-inline > text{
+.wxparser--wxParser-inline > text {
   word-wrap: break-word;
   word-break: break-all;
+  white-space: inherit;
 }
 </style>
 

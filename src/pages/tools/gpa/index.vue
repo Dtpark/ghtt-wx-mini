@@ -15,6 +15,26 @@ export default {
   },
   methods: {
     /**
+     * 是否绑定教务系统
+     */
+    isBind() {
+      let that = this;
+      let bind;
+      let status;
+      status = wx.getStorageSync("edubind");
+      switch (status) {
+        case "bind":
+          bind = true;
+          break;
+        case "unbind":
+          bind = false;
+          break;
+        default:
+          bind = false;
+      }
+      return bind;
+    },
+    /**
      * 获取学号密码，拼接链接
      */
     getEduSysInfo() {
@@ -35,13 +55,6 @@ export default {
                 that.$url.gpaUrl + "?stuid=" + stuid + "&passwd=" + pwd;
             } else if (successRes.data.errcode == 10) {
               // 登录态过期,重新登录
-              wx.showToast({
-                title: "请下拉刷新", //提示的内容,
-                icon: "none", //图标,
-                duration: 2000, //延迟时间,
-                mask: true //显示透明蒙层，防止触摸穿透
-              });
-              that.$login.doLogin();
             }
           });
       }
@@ -53,49 +66,53 @@ export default {
   async onShow() {
     let that = this;
     let user_status;
+    let bind;
+    let params = {};
     wx.showLoading({
       title: "加载中", //提示的内容,
       mask: true //显示透明蒙层，防止触摸穿透
     });
     // 判断是否登录
     user_status = await that.$login.isLogin();
-    if (user_status == 0) {
-      // 登录成功
-
-      // 判断是否绑定教务系统
-      let edubind = wx.getStorageSync("edubind");
-      switch (edubind) {
-        case "bind":
-          // 已经绑定
-          // 获取学号和密码
-          that.getEduSysInfo();
-          wx.hideLoading();
-          break;
-        case "unbind":
-          wx.hideLoading();
-          wx.showModal({
-            title: "提示", //提示的标题,
-            content: "您尚未绑定教务系统，是否绑定？", //提示的内容,
-            showCancel: true, //是否显示取消按钮,
-            cancelText: "取消", //取消按钮的文字，默认为取消，最多 4 个字符,
-            cancelColor: "#000000", //取消按钮的文字颜色,
-            confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
-            confirmColor: "#3CC51F", //确定按钮的文字颜色,
-            success: res => {
-              if (res.confirm) {
-                //   console.log('用户点击确定')
-                wx.navigateTo({ url: "/pages/edusys/main" });
-              } else if (res.cancel) {
-                //   console.log('用户点击取消')
-                wx.navigateBack({
-                  delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-                });
-              }
-            }
+    bind = that.isBind();
+    if (user_status == 0 && bind) {
+      // 已经登录 且 绑定了教务系统
+      // 获取学号密码，访问网页
+      that.getEduSysInfo();
+    } else if (user_status == 10) {
+      // 没有登录
+      params = {
+        content: "您尚未登录，是否登录?"
+      };
+      that.$wxAPI.showModal(params).then(success => {
+        if (success.confirm) {
+          // 用户点击确定
+          that.$wxAPI.toLoginPage();
+        } else if (success.cancel) {
+          // 用户点击取消
+          wx.navigateBack({
+            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
           });
-          break;
-      }
+        }
+      });
+    } else if (bind == false) {
+      // 尚未绑定教务系统
+      params = {
+        content: "您尚未绑定教务系统，是否进行绑定？"
+      };
+      that.$wxAPI.showModal(params).then(success => {
+        if (success.confirm) {
+          // 用户点击确定
+          wx.navigateTo({ url: "/pages/edusys/main" });
+        } else if (success.cancel) {
+          // 用户点击取消
+          wx.navigateBack({
+            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+          });
+        }
+      });
     }
+    wx.hideLoading();
   }
 };
 </script>

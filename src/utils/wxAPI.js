@@ -91,9 +91,15 @@ function request(url, data = {}, method = 'POST') {
     confirmColor: "#3CC51F", //确定按钮的文字颜色,
  */
 
-function showModal(params = { title: '', content: '', showCancel: true, cancelText: '取消', cancelColor: '#000', confirmText: '确定', confirmColor: "#3CC51F" }) {
+function showModal(params = { title: '注意', content: '', showCancel: true, cancelText: '取消', cancelColor: '#000', confirmText: '确定', confirmColor: "#3CC51F" }) {
     return wxPromisify('showModal', params);
 }
+/**
+ * 跳转到登录页
+ */ 
+function toLoginPage(){
+    wx.navigateTo({ url: '/pages/login/main' });
+} 
 
 
 export default {
@@ -102,5 +108,6 @@ export default {
     getSetting,
     checkSession,
     request,
-    showModal
+    showModal,
+    toLoginPage
 }

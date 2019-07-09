@@ -46,6 +46,7 @@
                   @click="showNoticeDetail"
                   :data-para="item"
                   class="weui-media-box__desc"
+                  style="font-size: 14px;"
                   hover-class="weui-cell_active"
                 >
                   <span class="applet_notice_type margin-right-xs">[ {{item['type']}} ]</span>
@@ -181,7 +182,7 @@
     <div v-else>
       <div class="weui-loadmore">
         <div>您尚未登录，部分功能无法使用，请先登录~</div>
-        <button class="btn__edubind" size="mini" type="warn" @click="onclickLogin">登录</button>
+        <button class="btn__edubind" size="mini" type="warn" @click="onclickLogin">前往登录</button>
       </div>
     </div>
     <!-- 未登录提示结束 -->
@@ -337,28 +338,7 @@ export default {
      */
     async onclickLogin() {
       let that = this;
-      wx.showLoading({
-        title: '加载中', //提示的内容,
-        mask: true, //显示透明蒙层，防止触摸穿透
-      });
-      let res = await that.$login.doLogin();
-      switch (res) {
-        case 0:
-          // 登录成功
-          //检查登录态
-          await that.checkLogin();
-          // 加载模块信息
-          await that.loadMoudel();
-          wx.hideLoading();
-          break;
-        default:
-          wx.showToast({
-            title: "登录失败，请重试", //提示的内容,
-            icon: "none", //图标,
-            duration: 2000, //延迟时间,
-            mask: true //显示透明蒙层，防止触摸穿透
-          });
-      }
+      that.$wxAPI.toLoginPage();
     },
 
     /**
@@ -366,8 +346,9 @@ export default {
      */
     async loadMoudel() {
       let that = this;
-      let TT_errcode;
-      let TE_errcode;
+      let TT_errcode = 0;
+      let TE_errcode = 0;
+      let params;
       if (that.isLogin) {
         // 是否显示课表模块
         let timeTableMoudel = await that.isShowTimeTable();
@@ -393,28 +374,20 @@ export default {
           case false:
             break;
         }
-
         // 判断各模块加载状态
-        switch (TT_errcode + TE_errcode) {
-          case 0:
-            // 加载正常，或模块未显示，不执行任何操作
-            break;
-          case 10:
-            // 一个模块执行时登录过期
-            await that.$login.doLogin();
-            if (TT_errcode == 10) {
-              await that.getTodayTable();
+        if (TT_errcode == 10 || TE_errcode == 10) {
+          // 登录过期
+          params = {
+            content: "登录过期，是否重新登录?"
+          };
+          that.$wxAPI.showModal(params).then(success => {
+            if (success.confirm) {
+              that.$wxAPI.toLoginPage();
+            } else if (success.cancel) {
+              // 用户点击取消
+              that.isLogin = false;
             }
-            if (TE_errcode == 10) {
-              await that.getTodayExpenses();
-            }
-            break;
-          case 20:
-            // 两个模块均过期
-            await that.$login.doLogin();
-            await that.getTodayTable();
-            await that.getTodayExpenses();
-            break;
+          });
         }
       }
     },
@@ -508,7 +481,6 @@ export default {
                 break;
               case 10:
                 // 登录过期，重新登录
-                // console.log('timetable dologin');
                 errcode = 10;
                 break;
               default:
@@ -664,42 +636,55 @@ export default {
     // 获取通知公告[]
     that.getNoticeList();
 
-    // 判断是否登录
-    await that.checkLogin();
-
-    // 加载各个登录可见模块
-    await that.loadMoudel();
-
     wx.hideLoading();
   },
-  onShow() {
+  async onShow() {
     let that = this;
-    // wx.showLoading({
-    //   title: "加载中", //提示的内容,
-    //   mask: true //显示透明蒙层，防止触摸穿透
-    // });
-
-    if (that.isShowTimeTable()) {
-      // 检查教务系统绑定状态
-      that.isBindEduSys();
-    }
-
-    if (that.isShowCampusCard()) {
-      // 检查一卡通绑定状态
-      that.isBindCampuscard();
+    let user_status;
+    wx.showLoading({
+      title: "加载中", //提示的内容,
+      mask: true //显示透明蒙层，防止触摸穿透
+    });
+    // 检查是否登录
+    user_status = await that.checkLogin();
+    if (user_status == 0) {
+      // 用户已登录
+      if (that.week == "*" || that.balance == "*") {
+        await that.loadMoudel();
+      }
     }
     wx.hideLoading();
   },
+
   /**
    * 页面相关事件处理函数--监听用户下拉动作
    */
   async onPullDownRefresh() {
     let that = this;
+    let params;
 
     // 获取通知公告列表
     that.getNoticeList();
-    // 加载各登录可见模块
-    that.loadMoudel();
+    // 检查是否登录
+    user_status = await that.checkLogin();
+    if (user_status == 0) {
+      // 加载各登录可见模块
+      that.loadMoudel();
+    }else if(user_status == 10){
+      // 登录过期
+      params = {
+        content: '登录过期，是否重新登录？'
+      };
+      that.$wxAPI.showModal(params)
+      .then(success => {
+        if(success.confirm){
+          // 用户点击确定
+          that.$wxAPI.toLoadPage();
+        }else if(success.cancel){
+          that.isLogin = false;
+        }
+      })
+    }
     wx.stopPullDownRefresh();
   },
 
@@ -770,7 +755,7 @@ page {
   margin: 10rpx;
   width: 600rpx;
   color: black;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
