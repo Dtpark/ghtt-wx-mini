@@ -1,7 +1,7 @@
 {
   "usingComponents": {},
   "navigationBarTitleText": "GPA计算器",
-  "navigationBarBackgroundColor": "white",
+  "navigationBarBackgroundColor": "#fff",
   "navigationBarTextStyle" : "black",
   "navigationStyle": "default",
   "enablePullDownRefresh": true

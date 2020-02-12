@@ -3,7 +3,7 @@
     "wxparser": "plugin://wxparserPlugin/wxparser"
   },
   "navigationBarTitleText": "新闻详情",
-  "navigationBarBackgroundColor": "white",
+  "navigationBarBackgroundColor": "#fff",
   "navigationBarTextStyle" : "black",
   "navigationStyle": "default"
 }

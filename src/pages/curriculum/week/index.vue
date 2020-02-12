@@ -77,7 +77,7 @@
               :data-kslx="item.kslx"
               :data-type="item.type"
               data-statu="open"
-              :style="{marginLeft:(item.day-1)*96+'rpx', marginTop: (item.time-1)*currHeight+3 +'px', height:currHeight-5+'px',backgroundColor:kch2color[item.kch]}"
+              :style="{marginLeft:(item.day-1)*96.5+'rpx', marginTop: (item.time-1)*currHeight+3 +'px', height:currHeight-5+'px',backgroundColor:kch2color[item.kch]}"
             >
               <div class="smalltext">{{ item.name }}@{{ item.room }}</div>
             </div>
@@ -154,6 +154,11 @@
       </div>
     </div>-->
     <!-- 未安排周次的课程结束 -->
+    <!-- 刷新按钮开始 -->
+    <div class="applet_refresh_box" @click="refresh">
+      <img class="applet_refresh_img" src="/static/images/refresh.png" />
+    </div>
+    <!-- 刷新按钮结束 -->
     <!-- 返回首页开始 -->
     <goHome></goHome>
     <!-- 返回首页结束 -->
@@ -161,13 +166,12 @@
 </template>
 <script>
 import goHome from "@/components/goHome";
-import frames from "@/components/frames";
+// import frames from "@/components/frames";
 // import navigationBar from "@/components/navigationBar";
 
 export default {
   components: {
-    goHome,
-    frames
+    goHome
   },
   data() {
     return {
@@ -205,7 +209,9 @@ export default {
         22,
         23,
         24,
-        25
+        25,
+        26,
+        27
       ],
       // 第几周
       week: null,
@@ -227,19 +233,8 @@ export default {
      */
     isBind() {
       let that = this;
-      let bind;
       let status = wx.getStorageSync("edubind");
-      switch (status) {
-        case "bind":
-          // 已经绑定教务系统
-          bind = true;
-          break;
-        case "unbind":
-          // 未绑定教务系统
-          bind = false;
-          break;
-      }
-      return bind;
+      return status;
     },
     /**
      * 获取周次课表信息
@@ -355,6 +350,8 @@ export default {
                       that.getWeekTimeTable(that.week);
                     }
                   });
+                } else if (success.data.errcode == 10) {
+                  that.$wxAPI.isLoginModal();
                 } else {
                   wx.showModal({
                     title: "提示", //提示的标题,
@@ -385,6 +382,35 @@ export default {
     hideModal() {
       let that = this;
       that.isShowModal = false;
+    },
+
+    /**
+     * 刷新页面
+     */
+    async refresh() {
+      let that = this;
+      let params;
+      let res = await that.getWeekTimeTable(that.week, 1);
+      if (res.errcode == 0) {
+        // 获取成功，弹窗显示成功
+        wx.showToast({
+          title: "更新成功", //提示的内容,
+          icon: "success", //图标,
+          duration: 2000, //延迟时间,
+          mask: true //显示透明蒙层，防止触摸穿透
+        });
+      } else if (res.errcode == 10) {
+        // 登录过期，重新登录
+        that.$wxAPI.isLoginModal("登录过期", false);
+      } else {
+        // 其他错误
+        params = {
+          title: "注意",
+          content: res.errmsg,
+          showCancel: false
+        };
+        that.$wxAPI.showModal(params);
+      }
     }
   },
   /**
@@ -407,80 +433,57 @@ export default {
    */
   async onShow() {
     let that = this;
-    let user_status;
     let bind;
+    let loadTimeTable;
     let params;
+    let res = {
+      errcode: null,
+      errmsg: ""
+    };
     wx.showLoading({
       title: "加载中", //提示的内容,
       mask: true //显示透明蒙层，防止触摸穿透
     });
 
-    // 判断是否登录
-    user_status = await that.$login.isLogin();
-
     // 判断是否绑定教务系统
     bind = that.isBind();
 
-    if (user_status == 0 && bind) {
-      // 用户已经登录 且 绑定了教务系统
-
-      // 获取课程信息
-      let res = await that.getWeekTimeTable();
-      if (res.errcode == 0) {
-        // 获取成功，不进行任何操作
-      } else if (res.errcode == 10) {
-        // 登录态过期，需要重新登录
-        // 弹窗提示
-        params = {
-          title: "注意",
-          content: "登录过期，是否重新登录"
-        };
-        that.$wxAPI.showModal(params).then(success => {
-          if (success.confirm) {
-            // 用户点击确定
-            that.$wxAPI.toLoginPage();
-          } else if (success.cancel) {
-            // 用户点击取消
-            wx.navigateBack({
-              delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-            });
-          }
-        });
-      } else {
-        // 其他错误
-        params = {
-          title: "注意",
-          content: res.errmsg,
-          showCancel: false
-        };
-        that.$wxAPI.showModal(params).then(success => {
-          if (success.confirm) {
-            // 用户点击确认,返回上一页
-            wx.navigateBack({
-              delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-            });
-          }
-        });
-      }
-    } else if (user_status == 10) {
-      // 用户未登录
-      // 弹窗提示
-      params = {
-        title: "注意",
-        content: "登录过期，是否重新登录?"
-      };
-      that.$wxAPI.showModal(params).then(res => {
-        if (res.confirm) {
-          // 用户点击确定
-          that.$wxAPI.toLoginPage();
-        } else {
-          // 用户点击取消
-          wx.navigateBack({
-            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+    if (bind == "bind") {
+      // 用户已经绑定了教务系统
+      // 若本地无课程信息 或 新增加了自定义课程 则获取课程信息
+      loadTimeTable = wx.getStorageSync("loadTimeTable");
+      if (that.wlist == null || loadTimeTable == "true") {
+        if (loadTimeTable == "true") {
+          wx.setStorage({
+            key: "loadTimeTable",
+            data: "false"
           });
         }
-      });
-    } else if (bind == false) {
+        res = await that.getWeekTimeTable();
+        if (res.errcode == 0) {
+          // 获取成功，不进行任何操作
+        } else if (res.errcode == 10) {
+          // 登录态过期，需要重新登录
+          // 弹窗提示
+          that.$wxAPI.isLoginModal();
+        } else {
+          // 其他错误
+          params = {
+            title: "注意",
+            content: res.errmsg,
+            showCancel: false
+          };
+          that.$wxAPI.showModal(params).then(success => {
+            if (success.confirm) {
+              // 用户点击确认,返回上一页
+              wx.navigateBack({
+                delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+              });
+            }
+          });
+        }
+      }
+    } else if (bind == "unbind") {
       // 用户未绑定教务系统
       params = {
         title: "提示", //提示的标题,
@@ -489,7 +492,7 @@ export default {
       that.$wxAPI.showModal(params).then(res => {
         if (res.confirm) {
           // console.log('用户点击确定')
-          wx.navigateTo({ url: "/pages/edudsys/main" });
+          wx.navigateTo({ url: "/pages/edusys/main" });
         } else if (res.cancel) {
           // console.log('用户点击取消')
           wx.navigateBack({
@@ -497,6 +500,10 @@ export default {
           });
         }
       });
+    } else {
+      // 用户未登录
+      // 弹窗提示
+      that.$wxAPI.isLoginModal("尚未登录");
     }
 
     wx.hideLoading();
@@ -506,42 +513,7 @@ export default {
    */
   async onPullDownRefresh() {
     let that = this;
-    let params;
-    let res = await that.getWeekTimeTable(that.week, 1);
-    console.log(res);
-    if (res.errcode == 0) {
-      // 获取成功，弹窗显示成功
-      wx.showToast({
-        title: "更新成功", //提示的内容,
-        icon: "success", //图标,
-        duration: 2000, //延迟时间,
-        mask: true //显示透明蒙层，防止触摸穿透
-      });
-    } else if (res.errcode == 10) {
-      // 登录过期，重新登录
-      params = {
-        title: "注意",
-        content: "登录过期，是否重新登录"
-      };
-      that.$wxAPI.showModal(params).then(success => {
-        if (success.confirm) {
-          // 用户点击确定
-          that.$wxAPI.toLoginPage();
-          // that.getWeekTimeTable();
-        } else if (success.cancel) {
-          // 用户点击取消
-        }
-      });
-    } else {
-      // 其他错误
-      console.log("其他错误");
-      params = {
-        title: "注意",
-        content: res.errmsg,
-        showCancel: false
-      };
-      that.$wxAPI.showModal(params);
-    }
+    that.refresh();
     wx.stopPullDownRefresh();
   },
 
@@ -724,6 +696,25 @@ page {
 }
 
 /* 未安排周次的课程样式结束 */
+
+/* 刷新按钮样式开始 */
+.applet_refresh_box {
+  z-index: 100;
+  position: fixed;
+  right: 50rpx;
+  bottom: 290rpx;
+  width: 88rpx;
+  height: 88rpx;
+}
+
+.applet_refresh_img {
+  background-color: #1296db;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+/* 刷新按钮样式结束 */
 </style>
 
 

@@ -1,7 +1,7 @@
 {
   "usingComponents": {},
   "navigationBarTitleText": "校网新闻",
-  "navigationBarBackgroundColor": "white",
+  "navigationBarBackgroundColor": "#fff",
   "navigationBarTextStyle" : "black",
   "navigationStyle": "default",
   "enablePullDownRefresh": true

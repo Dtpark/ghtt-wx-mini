@@ -1,6 +1,6 @@
 <script>
 export default {
-  created () {
+  created() {
     // 调用API从本地缓存中获取数据
     /*
      * 平台 api 差异的处理方式:  api 方法统一挂载到 mpvue 名称空间, 平台判断通过 mpvuePlatform 特征字符串
@@ -10,28 +10,67 @@ export default {
      * 支付宝(蚂蚁)：mpvue === my, mpvuePlatform === 'my'
      */
 
-  //   let logs
-  //   if (mpvuePlatform === 'my') {
-  //     logs = mpvue.getStorageSync({key: 'logs'}).data || []
-  //     logs.unshift(Date.now())
-  //     mpvue.setStorageSync({
-  //       key: 'logs',
-  //       data: logs
-  //     })
-  //   } else {
-  //     logs = mpvue.getStorageSync('logs') || []
-  //     logs.unshift(Date.now())
-  //     mpvue.setStorageSync('logs', logs)
-  //   }
-  // },
-  // log () {
-  //   console.log(`log at:${Date.now()}`)
-  // wx.showShareMenu();
+    //   let logs
+    //   if (mpvuePlatform === 'my') {
+    //     logs = mpvue.getStorageSync({key: 'logs'}).data || []
+    //     logs.unshift(Date.now())
+    //     mpvue.setStorageSync({
+    //       key: 'logs',
+    //       data: logs
+    //     })
+    //   } else {
+    //     logs = mpvue.getStorageSync('logs') || []
+    //     logs.unshift(Date.now())
+    //     mpvue.setStorageSync('logs', logs)
+    //   }
+    // },
+    // log () {
+    //   console.log(`log at:${Date.now()}`)
+    wx.setStorageSync("loadIndexMoudel", "true");
   },
-  onLaunch() {
-    wx.showShareMenu({ withShareTicket: true });
+
+  /**
+   * 生命周期函数————监听小程序显示
+   */
+  async onShow() {
+    let that = this;
+    // 获取用户各个系统绑定状态
+    let session3rd = wx.getStorageSync("session3rd");
+    let old_edubind = wx.getStorageSync("edubind");
+    let old_campuscardbind = wx.getStorageSync("campuscardbind");
+    let success; // 向服务器请求绑定情况的返回结果
+    let res; // 执行登录操作的返回结果
+    if (session3rd) {
+      let data = {
+        session3rd: session3rd
+      };
+      success = await that.$wxAPI.request(
+        that.$url.bindStatusUrl,
+        data,
+        "POST"
+      );
+
+      if (success.data.errcode == 0) {
+        let edubind = success.data.eduSys;
+        let campuscardbind = success.data.campus_card;
+
+        if (old_edubind != edubind) {
+          wx.setStorageSync("edubind", edubind);
+          wx.setStorageSync("loadIndexMoudel", "true");
+        }
+
+        if (old_campuscardbind != campuscardbind) {
+          wx.setStorageSync("campuscardbind", campuscardbind);
+          wx.setStorageSync("loadIndexMoudel", "true");
+        }
+      } 
+      else if (success.data.errcode == 10) {
+        // 登录过期，重新登录刷新令牌
+        // res = await that.$login.doLogin();        
+      }
+    }
   }
-}
+};
 </script>
 
 <style>
@@ -52,7 +91,7 @@ export default {
   -webkit-transition: width 2s;
   -o-transition: width 2s;
 }
-page{
+page {
   background: #efefef;
 }
 .weui-cells__title {

@@ -3,7 +3,7 @@
     <form @submit="add">
       <div class="cu-form-group margin-top">
         <div class="title">课程名称</div>
-        <input name="name" placeholder="请输入课程名称">
+        <input name="name" placeholder="请输入课程名称" />
       </div>
       <!-- <div class="cu-form-group">
         <div class="title">授课教师</div>
@@ -31,7 +31,7 @@
       </div>
       <div class="cu-form-group margin-top">
         <div class="title">上课地点</div>
-        <input name="room" placeholder="请输入上课地点">
+        <input name="room" placeholder="请输入上课地点" />
       </div>
       <div class="padding">
         <button class="cu-btn block bg-blue margin-tb-sm lg" form-type="submit" type>添加</button>
@@ -80,7 +80,11 @@ export default {
           20,
           21,
           22,
-          23
+          23,
+          24,
+          25,
+          26,
+          27
         ],
         [
           1,
@@ -105,7 +109,11 @@ export default {
           20,
           21,
           22,
-          23
+          23,
+          24,
+          25,
+          26,
+          27
         ]
       ],
       // 周次选择器下标
@@ -175,60 +183,61 @@ export default {
           success: res => {
             if (res.confirm) {
               // console.log('用户点击确定')
-              that.$login
-                .isLogin()
-                .then(() => {
-                  let session3rd = wx.getStorageSync("session3rd");
-                  let data = {
-                    session3rd: session3rd,
-                    name: e.mp.detail.value.name,
-                    week: that.weekIndex,
-                    time: that.timeIndex,
-                    room: e.mp.detail.value.room
-                  };
-                  wx.showLoading({
-                    title: "加载中", //提示的内容,
-                    mask: true, //显示透明蒙层，防止触摸穿透,
-                    success: res => {}
-                  });
-                  that.$wxAPI
-                    .request(that.$url.addCurriculumUrl, data, "POST")
-                    .then(success => {
-                      // console.log(success.data);
-                      if (success.data.errcode == 0) {
-                        // 添加成功
-                        wx.hideLoading();
-                        wx.showToast({
-                          title: "添加成功", //提示的内容,
-                          icon: "success", //图标,
-                          duration: 2000, //延迟时间,
-                          mask: true, //显示透明蒙层，防止触摸穿透,
-                          complete: res => {}
-                        });
-                        wx.navigateBack({
-                          delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-                        });
-                      } else {
-                        wx.hideLoading();
-                        wx.showModal({
-                          title: "提示", //提示的标题,
-                          content: success.data.errmsg, //提示的内容,
-                          showCancel: false, //是否显示取消按钮,
-                          confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
-                          confirmColor: "#3CC51F", //确定按钮的文字颜色,
-                          success: res => {
-                            if (res.confirm) {
-                              //   console.log('用户点击确定')
-                            } else if (res.cancel) {
-                              //   console.log('用户点击取消')
-                            }
-                          }
-                        });
+              let session3rd = wx.getStorageSync("session3rd");
+              if (!session3rd) {
+                // session3rd 不存在
+                that.$wxAPI.isLoginModal("尚未登录", false);
+                return false;
+              }
+              let data = {
+                session3rd: session3rd,
+                name: e.mp.detail.value.name,
+                week: that.weekIndex,
+                time: that.timeIndex,
+                room: e.mp.detail.value.room
+              };
+              wx.showLoading({
+                title: "加载中", //提示的内容,
+                mask: true, //显示透明蒙层，防止触摸穿透,
+                success: res => {}
+              });
+              that.$wxAPI
+                .request(that.$url.addCurriculumUrl, data, "POST")
+                .then(success => {
+                  // console.log(success.data);
+
+                  if (success.data.errcode == 0) {
+                    // 添加成功
+                    wx.hideLoading();
+                    wx.showToast({
+                      title: "添加成功", //提示的内容,
+                      icon: "success", //图标,
+                      duration: 2000, //延迟时间,
+                      mask: true, //显示透明蒙层，防止触摸穿透,
+                      complete: res => {}
+                    });
+                    wx.setStorageSync("loadTimeTable", "true");
+                   
+                  } else if (success.data.errcode == 10) {
+                    // 登录过期
+                    that.$wxAPI.isLoginModal();
+                  } else {
+                    wx.hideLoading();
+                    wx.showModal({
+                      title: "提示", //提示的标题,
+                      content: success.data.errmsg, //提示的内容,
+                      showCancel: false, //是否显示取消按钮,
+                      confirmText: "确定", //确定按钮的文字，默认为取消，最多 4 个字符,
+                      confirmColor: "#3CC51F", //确定按钮的文字颜色,
+                      success: res => {
+                        if (res.confirm) {
+                          //   console.log('用户点击确定')
+                        } else if (res.cancel) {
+                          //   console.log('用户点击取消')
+                        }
                       }
                     });
-                })
-                .catch(e => {
-                  console.log(e);
+                  }
                 });
             } else if (res.cancel) {
               // console.log('用户点击取消')

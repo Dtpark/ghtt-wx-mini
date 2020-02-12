@@ -184,6 +184,16 @@ export default {
   padding: 20rpx 20rpx;
 }
 
+.page-body {
+  width: 100%;
+  flex-grow: 1;
+  overflow-x: hidden;
+}
+
+.page__bd {
+  margin-top: 20rpx;
+}
+
 .article {
   background-color: #fff;
   /* padding:20rpx; */

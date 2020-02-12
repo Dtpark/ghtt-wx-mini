@@ -1,11 +1,13 @@
 // 用于封装待请求的API接口
 
 // const baseUrl = 'https://mini.dtpark.top/index.php/';
-const baseUrl = 'https://applet.ghtt.ihitwh.com/';
+// const baseUrl = 'https://applet.ghtt.ihitwh.com/';
+const baseUrl = 'https://applet.ghtt.hitwh.cc/';
 // const baseUrl = 'http://mini.ghtt.com/index.php/';
 
 const loginUrl = baseUrl + 'login';
-const isLoginUrl = baseUrl + 'islogin';
+
+const bindStatusUrl = baseUrl + 'isbind';
 
 const eduBindUrl = baseUrl + 'edubind';
 
@@ -53,7 +55,7 @@ const gpaUrl = "https://shindo.sinaapp.com/gpa_auto"
 export default {
   
   loginUrl: loginUrl,
-  isLoginUrl,
+  bindStatusUrl,
   eduBindUrl: eduBindUrl,
   showInfoUrl: showInfoUrl,
   eduUnbindUrl: eduUnbindUrl,

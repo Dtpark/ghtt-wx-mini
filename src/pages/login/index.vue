@@ -15,7 +15,7 @@
       open-type="getUserInfo"
       lang="zh_CN"
       @getuserinfo="bindGetUserInfo"
-      @click="getUserInfoClick"
+      @click="login"
     >授权登录</button>
   </div>
 </template>
@@ -33,10 +33,10 @@ export default {
       let res;
       if (e.mp.detail.userInfo) {
         // 点击Button弹窗授权，如果授权了，执行login
-        // 因为Login流程中有wx.getUserInfo，此时就可以获取到了
         res = await that.$login.doLogin();
         if(res.errcode == 0){
           // 登录成功
+          wx.setStorageSync('loadIndexMoudel','true');
           wx.navigateBack({
             delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
           });
@@ -50,45 +50,29 @@ export default {
             success: res => {}
           });
         }
-        // that.$login
-        //   .doLogin()
-        //   .then(() => {
-        //     // 登录成功后，将用户信息存至全局后返回
-        //     // let userInfoRes = JSON.parse(wx.getStorageSync("userInfoRes"));
-        //     //app.globalData.userInfo = userInfoRes.userInfo;
-
-        //     // if (
-        //     //   that.lastPage == "/pages/index/main" ||
-        //     //   that.lastPage == "/pages/tools/list/main" ||
-        //     //   that.lastPage == "/pages/me/main"
-        //     // ) {
-        //     //   // 如果lastPage是tabbar页面则用wx.switchTab(Object object)跳转
-        //     //   wx.switchTab({
-        //     //     url: that.lastPage
-        //     //   });
-        //     // } else {
-        //     //   // 否则用wx.redirectTo(Object object)跳转
-        //     //   wx.redirectTo({
-        //     //     url: that.lastPage
-        //     //   });
-        //     // }
-        //   })
-          // .catch(err => {
-          //   console.log(err);
-          // });
       } else {
         // 用户点击拒绝，则弹窗提示
-        wx.showModal({
-          title: "提示", //提示的标题,
-          content: "您在授权登录后才能使用小程序", //提示的内容,
-          showCancel: false //是否显示取消按钮
+        // wx.showModal({
+        //   title: "提示", //提示的标题,
+        //   content: "您在授权登录后才能使用小程序", //提示的内容,
+        //   showCancel: false //是否显示取消按钮
+        // });
+        wx.navigateBack({
+          delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
         });
       }
+    },
+    /**
+     * 点击授权登录按钮
+     */
+    login(){
+      let that = this;
+      // that.$login.doLogin();
     }
   },
   onLoad(options) {
     let that = this;
-    console.log(options);
+    // console.log(options);
     if (options.url) {
       // console.log(that);
       // console.log(that.lastPage);
@@ -107,7 +91,10 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang='wxss'>
+page{
+  background: white;
+}
 .header {
   margin: 90rpx 0 90rpx 50rpx;
   border-bottom: 1px solid #ccc;

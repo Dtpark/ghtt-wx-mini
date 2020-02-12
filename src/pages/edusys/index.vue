@@ -66,29 +66,25 @@ export default {
      */
     checkBind() {
       let that = this;
-      let bind;
       let status;
       status = wx.getStorageSync("edubind");
       switch (status) {
         case "bind":
           // 已经绑定教务系统
-          bind = true;
           if (that.isBind == false) {
             that.isBind = true;
           }
           break;
         case "unbind":
           // 尚未绑定教务系的
-          bind = false;
           if (that.isBind == true) {
             that.isBind = false;
           }
           break;
         default:
-          // 尚未登录
-          bind = false;
+        // 尚未登录
       }
-      return bind;
+      return status;
     },
     /**
      * 获取学号和密码
@@ -108,6 +104,7 @@ export default {
           .request(that.$url.showInfoUrl, data, "POST")
           .then(successRes => {
             // 接口调用成功
+
             res.errcode = successRes.data.errcode;
             res.errmsg = successRes.data.errmsg + "";
             if (successRes.data.errcode == 0) {
@@ -166,6 +163,7 @@ export default {
                     mask: true //显示透明蒙层，防止触摸穿透
                   });
                   wx.setStorageSync("edubind", "bind");
+                  wx.setStorageSync('loadIndexMoudel','true');
                   that.isBind = true;
                   that.stuid = e.mp.detail.value.stuid;
                   that.pwd = e.mp.detail.value.pwd;
@@ -178,16 +176,7 @@ export default {
                   });
                   break;
                 case 10:
-                  wx.showModal({
-                    title: "提示", //提示的标题,
-                    content: successRes.data.errmsg, //提示的内容,
-                    success: res => {
-                      if (res.confirm) {
-                        // 用户点击确定执行登录流程
-                        that.$login.doLogin();
-                      }
-                    }
-                  });
+                  that.$wxAPI.isLoginModal("登录过期", false);
                   break;
               }
             },
@@ -233,10 +222,12 @@ export default {
               .request(that.$url.eduUnbindUrl, data, "POST")
               .then(successRes => {
                 // 接口调用成功
+
                 if (successRes.data.errcode == 0) {
                   // 解绑成功
                   wx.hideLoading();
                   wx.setStorageSync("edubind", "unbind");
+                  wx.setStorageSync("loadIndexMoudel", "true");
                   wx.showToast({
                     title: "解绑成功", //提示的内容,
                     icon: "success", //图标,
@@ -256,13 +247,7 @@ export default {
                   });
                 } else if (successRes.data.errcode == 10) {
                   // 登录过期重新登录
-                  that.$login
-                    .doLogin(e => {
-                      wx.hideLoading();
-                    })
-                    .catch(e => {
-                      console.log(e);
-                    });
+                  that.$wxAPI.isLoginModal("登录过期", false);
                 }
               })
               .catch(e => {
@@ -311,57 +296,24 @@ export default {
       mask: true //显示透明蒙层，防止触摸穿透
     });
 
-    // 1. 检查用户登录态
-    user_status = await that.$login.isLogin();
+    // 2. 判断是否绑定教务系统
+    bind = that.checkBind();
+    if (bind == "bind") {
+      // 已经绑定了教务系统
 
-    if (user_status == 0) {
-      // 用户已经登录
-
-      // 2. 判断是否绑定教务系统
-      bind = that.checkBind();
-      if (bind) {
-        // 已经绑定了教务系统
-
-        // 加载学号密码信息
-        loadRes = await that.getInfo();
-        if (loadRes.errcode == 0) {
-          // 加载成功，啥也不干
-        } else if (loadRes.errcode == 10) {
-          // 登录过期，重新登录
-          params = {
-            title: "注意",
-            content: "登录过期，是否重新登录"
-          };
-          that.$wxAPI.showModal(params).then(res => {
-            if (res.confirm) {
-              // 用户点击确定
-              that.$wxAPI.toLoginPage();
-            } else {
-              // 用户点击取消
-              wx.navigateBack({
-                delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-              });
-            }
-          });
-        }
+      // 加载学号密码信息
+      loadRes = await that.getInfo();
+      if (loadRes.errcode == 0) {
+        // 加载成功，啥也不干
+      } else if (loadRes.errcode == 10) {
+        // 登录过期，重新登录
+        that.$wxAPI.isLoginModal();
       }
-    } else if (user_status == 10) {
-      // 登录过期
-      params = {
-        title: "注意",
-        content: "登录过期，是否重新登录"
-      };
-      that.$wxAPI.showModal(params).then(res => {
-        if (res.confirm) {
-          // 用户点击确定
-          that.$wxAPI.toLoginPage();
-        } else {
-          // 用户点击取消
-          wx.navigateBack({
-            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-          });
-        }
-      });
+    } else if (bind == "unbind") {
+      // 尚未绑定，啥也不过
+    } else {
+      // 没有登录
+      that.$wxAPI.isLoginModal("尚未登录");
     }
     wx.hideLoading();
   },

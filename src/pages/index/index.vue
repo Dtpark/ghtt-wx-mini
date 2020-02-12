@@ -31,7 +31,7 @@
         <div class="weui-media-box__hd weui-media-box__hd_in-appmsg">
           <img class="weui-media-box__thumb" src="/static/images/notice.png" />
         </div>
-        <div v-if="noticeList != ''" class="weui-media-box__bd weui-media-box__bd_in-appmsg">
+        <div v-if="noticeList" class="weui-media-box__bd weui-media-box__bd_in-appmsg">
           <swiper
             class="applet_notice_swiper"
             vertical="true"
@@ -55,6 +55,9 @@
               </swiper-item>
             </block>
           </swiper>
+        </div>
+        <div v-else-if="noticeList == null">
+          <div class="weui-media-box__desc">加载中……</div>
         </div>
         <div v-else>
           <div class="weui-media-box__desc">暂无通知~</div>
@@ -199,10 +202,10 @@ export default {
       // 通知列表
       noticeList: null,
       // 每次显示的通知条数
-      number: 0,
+      number: 1,
 
       // 用户是否登录标志
-      isLogin: null,
+      isLogin: false,
 
       // 是否显示今日课表
       showTimeTable: true,
@@ -318,19 +321,21 @@ export default {
     /**
      * 判断是否登录
      */
-    async checkLogin() {
-      let user_status;
+    checkLogin() {
       let that = this;
-      user_status = await that.$login.isLogin();
-      switch (user_status) {
-        case 0:
-          that.isLogin = true;
-          break;
-        case 10:
-          that.isLogin = false;
-          break;
+      let user_status;
+      let status;
+      user_status = wx.getStorageSync("session3rd");
+      if (user_status) {
+        // 登录过，暂认为登录态有效
+        status = 0;
+        that.isLogin = true;
+      } else {
+        // 没登录过
+        status = 10;
+        that.isLogin = false;
       }
-      return user_status;
+      return status;
     },
 
     /**
@@ -386,6 +391,7 @@ export default {
             } else if (success.cancel) {
               // 用户点击取消
               that.isLogin = false;
+              wx.removeStorageSync( 'session3rd');
             }
           });
         }
@@ -422,11 +428,8 @@ export default {
       let that = this;
       let flag;
       let edubind = wx.getStorageSync("edubind");
-      // console.log(edubind);
-      // return false;
       switch (edubind) {
         case "unbind":
-          // console.log(that.eduSysBind);
           if (that.eduSysBind == true) {
             that.eduSysBind = false;
           }
@@ -615,10 +618,6 @@ export default {
      */
     onclick_detail_campuscard() {
       wx.navigateTo({ url: "/pages/campuscard/detail/main" });
-    },
-    test() {
-      console.log("test");
-      return 10;
     }
   },
 
@@ -641,15 +640,23 @@ export default {
   async onShow() {
     let that = this;
     let user_status;
-    wx.showLoading({
-      title: "加载中", //提示的内容,
-      mask: true //显示透明蒙层，防止触摸穿透
-    });
+    let isLoadMoudel;
     // 检查是否登录
-    user_status = await that.checkLogin();
+    user_status = that.checkLogin();
     if (user_status == 0) {
       // 用户已登录
-      if (that.week == "*" || that.balance == "*") {
+      isLoadMoudel = wx.getStorageSync('loadIndexMoudel');
+      if (isLoadMoudel == 'true') {
+        wx.removeStorage({
+          key: 'loadIndexMoudel',
+          success: res => {
+            // console.log('remove succsee');
+          }
+        });
+        wx.showLoading({
+          title: "加载中", //提示的内容,
+          mask: true //显示透明蒙层，防止触摸穿透
+        });
         await that.loadMoudel();
       }
     }
@@ -661,29 +668,20 @@ export default {
    */
   async onPullDownRefresh() {
     let that = this;
-    let params;
-
+    let user_status;
     // 获取通知公告列表
     that.getNoticeList();
     // 检查是否登录
     user_status = await that.checkLogin();
     if (user_status == 0) {
       // 加载各登录可见模块
-      that.loadMoudel();
-    }else if(user_status == 10){
-      // 登录过期
-      params = {
-        content: '登录过期，是否重新登录？'
-      };
-      that.$wxAPI.showModal(params)
-      .then(success => {
-        if(success.confirm){
-          // 用户点击确定
-          that.$wxAPI.toLoadPage();
-        }else if(success.cancel){
-          that.isLogin = false;
-        }
-      })
+      await that.loadMoudel();
+      wx.showToast({
+        title: '刷新成功', //提示的内容,
+        icon: 'success', //图标,
+        duration: 2000, //延迟时间,
+        mask: true, //显示透明蒙层，防止触摸穿透
+      });
     }
     wx.stopPullDownRefresh();
   },
@@ -728,7 +726,7 @@ page {
   margin-left: 30rpx;
   height: 2px;
   background: rgba(255, 255, 255, 1);
-  border-bottom: #d9d9d9 solid 1rpx;
+  border-bottom: #e5e5e5 solid 1rpx;
 }
 /* 分割线样式结束 */
 

@@ -50,6 +50,8 @@ export default {
         that.showTimeTable = false;
         wx.setStorageSync("showTimeTable", "false");
       }
+      // 刷新首页模块
+      wx.setStorageSync("loadIndexMoudel", "true");
     },
     /**
      * 改变一卡通显示状态
@@ -66,6 +68,8 @@ export default {
         that.showCampusCard = false;
         wx.setStorageSync("showCampusCard", "false");
       }
+      // 刷新首页模块
+      wx.setStorageSync("loadIndexMoudel", "true");
     }
   },
   /**

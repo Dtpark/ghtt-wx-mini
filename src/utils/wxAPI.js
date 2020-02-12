@@ -96,10 +96,37 @@ function showModal(params = { title: '注意', content: '', showCancel: true, ca
 }
 /**
  * 跳转到登录页
- */ 
-function toLoginPage(){
+ */
+function toLoginPage() {
     wx.navigateTo({ url: '/pages/login/main' });
-} 
+}
+
+/**
+ * 弹窗提醒是否重新登录
+ * info 为提示信息
+ * isBack 为点击取消是否返回上一页
+ */
+function isLoginModal(info = '登录过期', isBack = true) {
+    let params;
+    params = {
+        title: "注意",
+        content: info+"，是否重新登录？"
+    };
+    showModal(params).then(res => {
+        if (res.confirm) {
+            // 用户点击确定
+            toLoginPage();
+        } else {
+            // 用户点击取消
+            wx.removeStorageSync('session3rd');
+            if(isBack){
+                wx.navigateBack({
+                    delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
+                });
+            }            
+        }
+    });
+}
 
 
 export default {
@@ -109,5 +136,6 @@ export default {
     checkSession,
     request,
     showModal,
-    toLoginPage
+    toLoginPage,
+    isLoginModal
 }

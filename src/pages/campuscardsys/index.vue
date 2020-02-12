@@ -35,7 +35,7 @@
       </div>
       <div class="padding flex flex-direction">
         <button class="cu-btn bg-green lg" form-type="submit">绑定</button>
-        <button class="cu-btn line-black margin-top-sm lg" form-type="reset">重置</button>
+        <button class="cu-btn bg-white margin-top-sm lg" form-type="reset">重置</button>
       </div>
       <div class="tips">
         <p>提示</p>
@@ -69,29 +69,23 @@ export default {
      */
     checkBind() {
       let that = this;
-      let bind;
       let status;
       status = wx.getStorageSync("campuscardbind");
       switch (status) {
         case "bind":
           // 已经绑定一卡通系统
-          bind = true;
           if (that.isBind == false) {
             that.isBind = true;
           }
           break;
         case "unbind":
           // 尚未绑定教务系的
-          bind = false;
           if (that.isBind == true) {
             that.isBind = false;
           }
           break;
-        default:
-          // 尚未登录
-          bind = false;
       }
-      return bind;
+      return status;
     },
     /**
      * 获取学号和密码
@@ -167,6 +161,7 @@ export default {
                     mask: true //显示透明蒙层，防止触摸穿透
                   });
                   wx.setStorageSync("campuscardbind", "bind");
+                  wx.setStorageSync("loadIndexMoudel", "true");
                   that.isBind = true;
                   that.stuid = e.mp.detail.value.stuid;
                   that.pwd = e.mp.detail.value.pwd;
@@ -179,16 +174,8 @@ export default {
                   });
                   break;
                 case 10:
-                  wx.showModal({
-                    title: "提示", //提示的标题,
-                    content: successRes.data.errmsg, //提示的内容,
-                    success: res => {
-                      if (res.confirm) {
-                        // 用户点击确定执行登录流程
-                        that.$wxAPI.toLoginPage();
-                      }
-                    }
-                  });
+                  // 登录过期，弹窗提示
+                  that.$wxAPI.isLoginModal("登录过期", false);
                   break;
                 default:
                   wx.showModal({
@@ -244,6 +231,7 @@ export default {
                   // 解绑成功
                   wx.hideLoading();
                   wx.setStorageSync("campuscardbind", "unbind");
+                  wx.setStorageSync("loadIndexMoudel", "true");
                   wx.showToast({
                     title: "解绑成功", //提示的内容,
                     icon: "success", //图标,
@@ -263,14 +251,7 @@ export default {
                   });
                 } else if (successRes.data.errcode == 10) {
                   // 登录过期重新登录
-                  let params = {
-                    content: "登录过期，是否重新登录？"
-                  };
-                  that.$wxAPI.showModal(params).then(success => {
-                    if (success.confirm) {
-                      that.$wxAPI.toLoginPage();
-                    }
-                  });
+                  that.$wxAPI.isLoginModal("登录过期", false);
                 }
               })
               .catch(e => {
@@ -309,7 +290,6 @@ export default {
    */
   async onShow() {
     let that = this;
-    let user_status;
     let bind;
     let loadRes;
     let params;
@@ -318,57 +298,24 @@ export default {
       mask: true //显示透明蒙层，防止触摸穿透
     });
 
-    // 1. 检查用户登录态
-    user_status = await that.$login.isLogin();
-
-    if (user_status == 0) {
-      // 用户已经登录
-
-      // 2. 判断是否绑定一卡通系统
-      bind = that.checkBind();
-      if (bind) {
-        // 已经绑定了一卡通系统
-
-        // 加载学号密码信息
-        loadRes = await that.getInfo();
-        if (loadRes.errcode == 0) {
-          // 加载成功，啥也不干
-        } else if (loadRes.errcode == 10) {
-          // 登录过期，重新登录
-          params = {
-            title: "注意",
-            content: "登录过期，是否重新登录"
-          };
-          that.$wxAPI.showModal(params).then(res => {
-            if (res.confirm) {
-              // 用户点击确定
-              that.$wxAPI.toLoginPage();
-            } else {
-              // 用户点击取消
-              wx.navigateBack({
-                delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-              });
-            }
-          });
-        }
+    // 判断是否绑定一卡通系统
+    bind = that.checkBind();
+    if (bind == "bind") {
+      // 已经绑定了一卡通系统
+      // 加载学号密码信息
+      loadRes = await that.getInfo();
+      if (loadRes.errcode == 0) {
+        // 加载成功，啥也不干
+      } else if (loadRes.errcode == 10) {
+        // 登录过期，重新登录
+        that.$wxAPI.isLoginModal();
       }
-    } else if (user_status == 10) {
-      // 登录过期
-      params = {
-        title: "注意",
-        content: "登录过期，是否重新登录"
-      };
-      that.$wxAPI.showModal(params).then(res => {
-        if (res.confirm) {
-          // 用户点击确定
-          that.$wxAPI.toLoginPage();
-        } else {
-          // 用户点击取消
-          wx.navigateBack({
-            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-          });
-        }
-      });
+    } else if (bind == "unbind") {
+      // 尚未绑定一卡通系统
+      // 啥也不干
+    } else {
+      // 用户没有登录
+      that.$wxAPI.isLoginModal("您尚未登录");
     }
     wx.hideLoading();
   },

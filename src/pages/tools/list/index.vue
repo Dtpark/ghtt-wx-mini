@@ -101,6 +101,13 @@ export default {
       .request(that.$url.toolsListUrl)
       .then(success => {
         that.toolsList = success.data;
+        wx.showToast({
+          title: '刷新成功', //提示的内容,
+          icon: 'success', //图标,
+          duration: 2000, //延迟时间,
+          mask: true, //显示透明蒙层，防止触摸穿透,
+          success: res => {}
+        });
       })
       .catch(e => {
         console.log(e);

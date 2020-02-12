@@ -110,14 +110,8 @@ export default {
      */
     isBind() {
       let that = this;
-      let bind;
       let res = wx.getStorageSync("campuscardbind");
-      if (res == "bind") {
-        bind = true;
-      } else {
-        bind = false;
-      }
-      return bind;
+      return res;
     },
     /**
      * 请求一卡通信息
@@ -136,7 +130,7 @@ export default {
         .request(that.$url.expensesRecordUrl, data, "POST")
         .then(success => {
           res.errcode = success.data.errcode;
-          res.errmsg = success.data.errmsg + '';
+          res.errmsg = success.data.errmsg + "";
           if (res.errcode == 0) {
             // 请求成功
             that.user = success.data.data.user.data;
@@ -170,15 +164,11 @@ export default {
       title: "加载中", //提示的内容,
       mask: true //显示透明蒙层，防止触摸穿透
     });
-    // 检查登录态
-    let user_status = await that.$login.isLogin();
 
     // 检查一卡通系统绑定状态
     let bind = that.isBind();
-
-    if (user_status == 0 && bind) {
-      // 已经登录 且 绑定了一卡通
-
+    if (bind == "bind") {
+      // 已经绑定了一卡通
       // 开始请求信息
       loadRes = await that.loadInfo();
       switch (loadRes.errcode) {
@@ -187,22 +177,7 @@ export default {
           break;
         case 10:
           // 登录过期,弹窗提醒
-
-          params = {
-            title: "注意",
-            content: "登录过期，是否重新登录"
-          };
-          that.$wxAPI.showModal(params).then(res => {
-            if (res.confirm) {
-              // 用户点击确定
-              that.$wxAPI.toLoginPage();
-            } else {
-              // 用户点击取消
-              wx.navigateBack({
-                delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-              });
-            }
-          });
+          that.$wxAPI.isLoginModal();
           break;
         default:
           // 发生其他错误,弹窗提醒
@@ -220,24 +195,7 @@ export default {
             }
           });
       }
-    } else if (user_status == 10) {
-      // 尚未登录，弹窗提醒
-      params = {
-        title: "提示",
-        content: "登录状态过期，是否重新登录"
-      };
-      that.$wxAPI.showModal(params).then(success => {
-        if (success.confirm) {
-          // 用户点击确定
-          that.$wxAPI.toLoginPage();
-        } else if (success.cancel) {
-          // 用户点击了取消
-          wx.navigateBack({
-            delta: 1 //返回的页面数，如果 delta 大于现有页面数，则返回到首页,
-          });
-        }
-      });
-    } else if (bind == false) {
+    } else if (bind == "unbind") {
       // 未绑定一卡通系统，弹窗提醒
       params = {
         title: "提示", //提示的标题,
@@ -254,6 +212,9 @@ export default {
           });
         }
       });
+    } else {
+      // 尚未登录,弹窗提醒
+      that.$wxAPI.isLoginModal('您尚未登录');
     }
     wx.hideLoading();
   },
