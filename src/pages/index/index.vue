@@ -414,8 +414,8 @@ export default {
         }
 
         // 是否显示一卡通模块
-        // let campusCardMoudel = await that.isShowCampusCard();
-        let campusCardMoudel = false;
+        let campusCardMoudel = await that.isShowCampusCard();
+        // let campusCardMoudel = false;
         switch (campusCardMoudel) {
           case true:
             // 显示一卡通模块
@@ -563,7 +563,8 @@ export default {
     isShowCampusCard() {
       let that = this;
       let flag;
-      let status = wx.getStorageSync("showCampusCard");
+      // let status = wx.getStorageSync("showCampusCard");
+      let status = "false"
       switch (status) {
         case "true":
           that.showCampusCard = true;
