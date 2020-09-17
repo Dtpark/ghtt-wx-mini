@@ -414,12 +414,13 @@ export default {
         }
 
         // 是否显示一卡通模块
-        let campusCardMoudel = await that.isShowCampusCard();
+        // let campusCardMoudel = await that.isShowCampusCard();
+        let campusCardMoudel = false;
         switch (campusCardMoudel) {
           case true:
             // 显示一卡通模块
             // 获取消费信息
-            // TE_errcode = await that.getTodayExpenses();
+            TE_errcode = await that.getTodayExpenses();
             break;
           case false:
             break;
