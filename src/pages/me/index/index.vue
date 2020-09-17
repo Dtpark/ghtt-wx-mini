@@ -19,12 +19,12 @@
           <text class="text-grey">教务系统</text>
         </navigator>
       </div>
-      <div class="cu-item arrow">
+      <!-- <div class="cu-item arrow">
         <navigator class="content" :url="campuscardSysUrl" hover-class="none">
           <text class="cuIcon-card text-green"></text>
           <text class="text-grey">一卡通</text>
         </navigator>
-      </div>
+      </div> -->
     </div>
 
     <div class="cu-list menu card-menu margin-top-x1 margin-bottom-xl shadow-lg radius">

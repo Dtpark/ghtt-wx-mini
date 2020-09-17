@@ -15,7 +15,7 @@
                 <!-- 卡片头部开始 -->
                 <div class="article-header">
                   <div class="article-author-avatar">
-                    <img :src="article.avatar">
+                    <img :src="article.avatar" />
                   </div>
                   <div class="article-side-header">
                     <div class="article-sub-header">
@@ -38,7 +38,7 @@
                 <block v-if="!lite_switch">
                   <div class="article-img" v-if="article.image_list">
                     <div class="article-img-info">
-                      <img class="article-img-item" :src="article.image_list[0]">
+                      <img class="article-img-item" :src="article.image_list[0]" />
                     </div>
                   </div>
                   <div class="article-message" v-if="article.message">{{article.message}}</div>
@@ -137,6 +137,17 @@ export default {
     that.reloadIndex();
     wx.hideLoading();
   },
+
+  onShow() {
+    let that = this;
+    wx.showLoading({
+      title: "加载中", //提示的内容,
+      mask: true //显示透明蒙层，防止触摸穿透
+    });
+    that.reloadIndex();
+    wx.hideLoading();
+  },
+
   /**
    * 触底函数--加载更多帖子
    */

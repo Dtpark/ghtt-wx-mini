@@ -13,10 +13,12 @@
         interval="3000"
         duration="1000"
       >
-        <swiper-item v-for="(item, index) in bannerImgUrls" :key="index">
-          <img class="applet_banner_img" :src="item" mode="aspectFill" />
-          <!-- <video src="{{item.url}}" autoplay loop muted show-play-btn="{{false}}" controls="{{false}}" objectFit="cover" wx:if="{{item.type=='video'}}"></video> -->
-        </swiper-item>
+        <block v-for="(item, index) in bannerImgUrls" :key="index">
+          <swiper-item @click="toBannerDetail" :data-para="item">
+            <img class="applet_banner_img" :src="item['image_url']" mode="aspectFill" />
+            <!-- <video src="{{item.url}}" autoplay loop muted show-play-btn="{{false}}" controls="{{false}}" objectFit="cover" wx:if="{{item.type=='video'}}"></video> -->
+          </swiper-item>
+        </block>
       </swiper>
     </div>
     <!-- 顶部banner结束 -->
@@ -197,7 +199,11 @@ export default {
     return {
       // 轮播图链接：
       bannerImgUrls: [
-        "https://ghttdata.hitwh.cc/data/attachment/forum/201907/08/151218k9m51mm5f61mk5v9.png"
+        {
+          image_url:
+            "https://ghttdata.hitwh.cc/data/attachment/forum/201907/08/151218k9m51mm5f61mk5v9.png",
+          type: 0
+        }
       ],
       // 通知列表
       noticeList: null,
@@ -264,6 +270,45 @@ export default {
         that.date = year + "-" + month + "-" + day;
       });
     },
+
+    /**
+     * 跳转到banner详情页
+     */
+    toBannerDetail(event) {
+      let that = this;
+      let banner = event.mp.currentTarget.dataset.para;
+      // console.log(banner);
+      switch (banner.type) {
+        // 判断banner类型
+        case 0:
+          // 纯图片，不跳转
+          break;
+        case 9:
+          // 跳转到其他小程序（微信）
+          wx.navigateToMiniProgram({
+            appId: banner.detail_id,
+            path: "",
+            extraData: {},
+            success(res) {
+              // 打开成功
+              // console.log('111');
+            },
+            fail(res) {
+              // 打开失败
+              wx.showToast({
+                title: '跳转失败', //提示的内容,
+                icon: 'none',
+                duration: 2000, //延迟时间,
+                mask: true, //显示透明蒙层，防止触摸穿透,
+                success: res => {}
+              });
+            }
+          });
+          break;
+      }
+      return false;
+    },
+
     /**
      * 获取通知公告列表
      */
@@ -374,7 +419,7 @@ export default {
           case true:
             // 显示一卡通模块
             // 获取消费信息
-            TE_errcode = await that.getTodayExpenses();
+            // TE_errcode = await that.getTodayExpenses();
             break;
           case false:
             break;
@@ -391,7 +436,7 @@ export default {
             } else if (success.cancel) {
               // 用户点击取消
               that.isLogin = false;
-              wx.removeStorageSync( 'session3rd');
+              wx.removeStorageSync("session3rd");
             }
           });
         }
@@ -645,10 +690,10 @@ export default {
     user_status = that.checkLogin();
     if (user_status == 0) {
       // 用户已登录
-      isLoadMoudel = wx.getStorageSync('loadIndexMoudel');
-      if (isLoadMoudel == 'true') {
+      isLoadMoudel = wx.getStorageSync("loadIndexMoudel");
+      if (isLoadMoudel == "true") {
         wx.removeStorage({
-          key: 'loadIndexMoudel',
+          key: "loadIndexMoudel",
           success: res => {
             // console.log('remove succsee');
           }
@@ -677,10 +722,10 @@ export default {
       // 加载各登录可见模块
       await that.loadMoudel();
       wx.showToast({
-        title: '刷新成功', //提示的内容,
-        icon: 'success', //图标,
+        title: "刷新成功", //提示的内容,
+        icon: "success", //图标,
         duration: 2000, //延迟时间,
-        mask: true, //显示透明蒙层，防止触摸穿透
+        mask: true //显示透明蒙层，防止触摸穿透
       });
     }
     wx.stopPullDownRefresh();
